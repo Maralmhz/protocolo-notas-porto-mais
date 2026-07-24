@@ -93,13 +93,25 @@ export default function Home() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Image
-            src="/pmais.jpeg"
-            alt="Porto Mais"
-            width={56}
-            height={56}
-            style={{ borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-          />
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 8,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Image
+              src="/pmais.jpeg"
+              alt="Porto Mais"
+              width={140}
+              height={70}
+              style={{ objectFit: 'contain', width: 'auto', height: 48 }}
+            />
+          </div>
           <div>
             <h1 style={{ color: '#0B3D91', margin: 0, fontSize: 26 }}>Protocolo de Notas</h1>
             <span style={{ color: '#666', fontSize: 14 }}>Porto Mais</span>
