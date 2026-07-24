@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import LoginPin from './components/LoginPin';
 import TabelaNotas from './components/TabelaNotas';
 import ModalNota from './components/ModalNota';
@@ -81,14 +82,34 @@ export default function Home() {
 
   return (
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ color: '#0B3D91' }}>Protocolo de Notas - Porto Mais</h1>
-        <div>
-          <span style={{ marginRight: 12 }}>Setor: <b>{setor}</b></span>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 24,
+          paddingBottom: 16,
+          borderBottom: '2px solid #0B3D91',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <Image
+            src="/pmais.jpeg"
+            alt="Porto Mais"
+            width={56}
+            height={56}
+            style={{ borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+          />
+          <div>
+            <h1 style={{ color: '#0B3D91', margin: 0, fontSize: 26 }}>Protocolo de Notas</h1>
+            <span style={{ color: '#666', fontSize: 14 }}>Porto Mais</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ marginRight: 4 }}>Setor: <b>{setor}</b></span>
           <button onClick={() => setSetor(null)} style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Sair</button>
         </div>
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input
           placeholder="Buscar por NF ou fornecedor"
@@ -99,9 +120,7 @@ export default function Home() {
         <button onClick={novaNota} style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>+ Nova nota</button>
         <button onClick={exportarCSV} style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>Exportar CSV</button>
       </div>
-
       <TabelaNotas notas={notasFiltradas} setor={setor} onAssinar={assinar} onEditar={editar} />
-
       {modalAberto && (
         <ModalNota
           nota={notaEditando}
