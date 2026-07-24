@@ -1,5 +1,13 @@
 'use client';
 
+function formatarData(data) {
+  if (!data) return '-';
+  const str = String(data).slice(0, 10);
+  const [ano, mes, dia] = str.split('-');
+  if (!ano || !mes || !dia) return '-';
+  return `${dia}/${mes}/${ano}`;
+}
+
 export default function TabelaNotas({ notas, setor, onAssinar, onEditar }) {
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -28,8 +36,8 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar }) {
                 background: n.status === 'Assinado' ? '#eafbe7' : '#fff',
               }}
             >
-              <td>{n.data_entrega ? String(n.data_entrega).slice(0, 10) : '-'}</td>
-              <td>{n.data_vencimento ? String(n.data_vencimento).slice(0, 10) : '-'}</td>
+              <td>{formatarData(n.data_entrega)}</td>
+              <td>{formatarData(n.data_vencimento)}</td>
               <td>{n.numero_nf}</td>
               <td>{n.fornecedor}</td>
               <td>{n.observacao}</td>
