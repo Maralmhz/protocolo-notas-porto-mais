@@ -1,0 +1,19 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f9;
+  color: #1a1a1a;
+}
+
+table {
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+button {
+  font-family: inherit;
+}
