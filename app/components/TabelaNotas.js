@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import ModalNota from './ModalNota'
 
 export default function TabelaNotas({ notas, onRefresh }) {
@@ -16,7 +16,7 @@ export default function TabelaNotas({ notas, onRefresh }) {
   const meses = [
     { valor: '01', nome: 'Janeiro' },
     { valor: '02', nome: 'Fevereiro' },
-    { valor: '03', nome: 'Março' },
+    { valor: '03', nome: 'Marco' },
     { valor: '04', nome: 'Abril' },
     { valor: '05', nome: 'Maio' },
     { valor: '06', nome: 'Junho' },
@@ -269,9 +269,9 @@ export default function TabelaNotas({ notas, onRefresh }) {
       {excluindoId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Confirmar exclusão</h3>
+            <h3 className="text-lg font-bold mb-4">Confirmar exclusao</h3>
             <p className="mb-4 text-gray-700">
-              Tem certeza que deseja excluir esta nota fiscal? Esta ação é definitiva e não pode ser desfeita.
+              Tem certeza que deseja excluir esta nota fiscal? Esta acao e definitiva e nao pode ser desfeita.
             </p>
             
             <div className="mb-4">
