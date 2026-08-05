@@ -1,249 +1,152 @@
-'use client'
+'use client';
+import { useState } from 'react';
 
-import { useState } from 'react'
-import ModalNota from './ModalNota'
+function formatarData(data) {
+  if (!data) return '-';
+  const str = String(data).slice(0, 10);
+  const [ano, mes, dia] = str.split('-');
+  if (!ano || !mes || !dia) return '-';
+  return `${dia}/${mes}/${ano}`;
+}
 
-export default function TabelaNotas({ notas, onRefresh }) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [notaEditando, setNotaEditando] = useState(null)
-  const [busca, setBusca] = useState('')
-  const [statusFiltro, setStatusFiltro] = useState('todos')
-  const [mesFiltro, setMesFiltro] = useState('todos')
-  const [excluindoId, setExcluindoId] = useState(null)
-  const [pinExclusao, setPinExclusao] = useState('')
-  const [erroExclusao, setErroExclusao] = useState('')
+const meses = [
+  { valor: '01', nome: 'Janeiro' },
+  { valor: '02', nome: 'Fevereiro' },
+  { valor: '03', nome: 'Marco' },
+  { valor: '04', nome: 'Abril' },
+  { valor: '05', nome: 'Maio' },
+  { valor: '06', nome: 'Junho' },
+  { valor: '07', nome: 'Julho' },
+  { valor: '08', nome: 'Agosto' },
+  { valor: '09', nome: 'Setembro' },
+  { valor: '10', nome: 'Outubro' },
+  { valor: '11', nome: 'Novembro' },
+  { valor: '12', nome: 'Dezembro' },
+];
 
-  const meses = [
-    { valor: '01', nome: 'Janeiro' },
-    { valor: '02', nome: 'Fevereiro' },
-    { valor: '03', nome: 'Marco' },
-    { valor: '04', nome: 'Abril' },
-    { valor: '05', nome: 'Maio' },
-    { valor: '06', nome: 'Junho' },
-    { valor: '07', nome: 'Julho' },
-    { valor: '08', nome: 'Agosto' },
-    { valor: '09', nome: 'Setembro' },
-    { valor: '10', nome: 'Outubro' },
-    { valor: '11', nome: 'Novembro' },
-    { valor: '12', nome: 'Dezembro' },
-  ]
+export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExcluir }) {
+  const [mesFiltro, setMesFiltro] = useState('todos');
+  const [excluindoId, setExcluindoId] = useState(null);
+  const [pinExclusao, setPinExclusao] = useState('');
+  const [erroExclusao, setErroExclusao] = useState('');
 
   const notasOrdenadas = [...notas].sort((a, b) => {
-    const dataA = new Date(a.data_entrada || a.created_at)
-    const dataB = new Date(b.data_entrada || b.created_at)
-    return dataB - dataA
-  })
+    const dataA = new Date(a.data_entrega || 0);
+    const dataB = new Date(b.data_entrega || 0);
+    return dataB - dataA;
+  });
 
-  const notasFiltradas = notasOrdenadas.filter(nota => {
-    const buscaLower = busca.toLowerCase()
-    const matchBusca =
-      nota.cnpj?.toLowerCase().includes(buscaLower) ||
-      nota.numero_nota?.toLowerCase().includes(buscaLower) ||
-      nota.valor?.toString().includes(busca) ||
-      nota.fornecedor?.toLowerCase().includes(buscaLower) ||
-      nota.observacoes?.toLowerCase().includes(buscaLower)
+  const notasFiltradas = notasOrdenadas.filter((n) => {
+    if (mesFiltro === 'todos') return true;
+    if (!n.data_vencimento) return false;
+    const mesVencimento = String(n.data_vencimento).slice(0, 10).split('-')[1];
+    return mesVencimento === mesFiltro;
+  });
 
-    const matchStatus = statusFiltro === 'todos' || nota.status === statusFiltro
-
-    let matchMes = true
-    if (mesFiltro !== 'todos' && nota.data_vencimento) {
-      const mesVencimento = nota.data_vencimento.split('-')[1]
-      matchMes = mesVencimento === mesFiltro
-    }
-
-    return matchBusca && matchStatus && matchMes
-  })
-
-  const handleNovaNota = () => {
-    setNotaEditando(null)
-    setModalOpen(true)
-  }
-
-  const handleEditarNota = (nota) => {
-    setNotaEditando(nota)
-    setModalOpen(true)
-  }
-
-  const confirmarExclusao = async () => {
+  async function confirmarExclusao() {
     if (pinExclusao !== '1010') {
-      setErroExclusao('PIN incorreto!')
-      return
+      setErroExclusao('PIN incorreto!');
+      return;
     }
-
     try {
-      const response = await fetch(`/api/notas/${excluindoId}`, {
+      const res = await fetch(`/api/notas/${excluindoId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin: pinExclusao }),
-      })
-
-      if (response.ok) {
-        setExcluindoId(null)
-        setPinExclusao('')
-        setErroExclusao('')
-        onRefresh()
+      });
+      if (res.ok) {
+        setExcluindoId(null);
+        setPinExclusao('');
+        setErroExclusao('');
+        onExcluir && onExcluir();
       } else {
-        const data = await response.json()
-        setErroExclusao(data.error || 'Erro ao excluir')
+        const data = await res.json();
+        setErroExclusao(data.error || 'Erro ao excluir');
       }
-    } catch (error) {
-      setErroExclusao('Erro ao excluir nota')
+    } catch (e) {
+      setErroExclusao('Erro ao excluir nota');
     }
   }
 
-  const cancelarExclusao = () => {
-    setExcluindoId(null)
-    setPinExclusao('')
-    setErroExclusao('')
-  }
-
-  const exportarCSV = () => {
-    const headers = ['ID', 'CNPJ', 'Numero Nota', 'Valor', 'Fornecedor', 'Data Emissao', 'Data Vencimento', 'Data Entrada', 'Status', 'Observacoes']
-    const csvData = notasFiltradas.map(nota => [
-      nota.id,
-      nota.cnpj,
-      nota.numero_nota,
-      nota.valor,
-      nota.fornecedor,
-      nota.data_emissao,
-      nota.data_vencimento,
-      nota.data_entrada,
-      nota.status,
-      nota.observacoes || ''
-    ])
-
-    const csvContent = [
-      headers.join(','),
-      ...csvData.map(row => row.map(cell => `"${cell || ''}"`).join(','))
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `notas_fiscais_${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const formatarData = (data) => {
-    if (!data) return '-'
-    return new Date(data).toLocaleDateString('pt-BR')
-  }
-
-  const formatarValor = (valor) => {
-    if (!valor) return 'R$ 0,00'
-    return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`
-  }
-
-  const StatusBadge = ({ status }) => {
-    const styles = {
-      pendente: 'bg-yellow-100 text-yellow-800',
-      entregue: 'bg-green-100 text-green-800',
-      cancelado: 'bg-red-100 text-red-800'
-    }
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status || 'pendente'}
-      </span>
-    )
+  function cancelarExclusao() {
+    setExcluindoId(null);
+    setPinExclusao('');
+    setErroExclusao('');
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-4 flex flex-wrap gap-2">
-        <input
-          type="text"
-          placeholder="Buscar por CNPJ, nota, valor..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-md text-sm"
-        />
-        
-        <select
-          value={statusFiltro}
-          onChange={(e) => setStatusFiltro(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-        >
-          <option value="todos">Todos status</option>
-          <option value="pendente">Pendentes</option>
-          <option value="entregue">Entregues</option>
-          <option value="cancelado">Cancelados</option>
-        </select>
-
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+        <label style={{ fontSize: 14, color: '#333' }}>Filtrar por mes de vencimento:</label>
         <select
           value={mesFiltro}
           onChange={(e) => setMesFiltro(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+          style={{ padding: 8, borderRadius: 8, border: '1px solid #ccc' }}
         >
-          <option value="todos">Todos meses</option>
-          {meses.map(mes => (
-            <option key={mes.valor} value={mes.valor}>
-              {mes.nome}
-            </option>
+          <option value="todos">Todos os meses</option>
+          {meses.map((m) => (
+            <option key={m.valor} value={m.valor}>{m.nome}</option>
           ))}
         </select>
-
-        <button
-          onClick={exportarCSV}
-          className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-        >
-          Exportar CSV
-        </button>
-
-        <button
-          onClick={handleNovaNota}
-          className="px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
-        >
-          Nova Nota
-        </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead className="bg-gray-50">
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
+          <thead style={{ background: '#0B3D91', color: '#fff' }}>
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">CNPJ</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Numero</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Valor</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Fornecedor</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Emissao</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Vencimento</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Entrada</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Acoes</th>
+              <th>Entrega</th>
+              <th>Vencimento</th>
+              <th>NF</th>
+              <th>Fornecedor</th>
+              <th>Observacao</th>
+              <th>Valor</th>
+              <th>Parcelas</th>
+              <th>Status</th>
+              <th>Lancado por</th>
+              <th>Assinado por</th>
+              <th>Acao</th>
             </tr>
           </thead>
           <tbody>
-            {notasFiltradas.map((nota) => (
-              <tr key={nota.id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2 text-sm">{nota.cnpj}</td>
-                <td className="px-4 py-2 text-sm">{nota.numero_nota}</td>
-                <td className="px-4 py-2 text-sm">{formatarValor(nota.valor)}</td>
-                <td className="px-4 py-2 text-sm">{nota.fornecedor}</td>
-                <td className="px-4 py-2 text-sm">{formatarData(nota.data_emissao)}</td>
-                <td className="px-4 py-2 text-sm">{formatarData(nota.data_vencimento)}</td>
-                <td className="px-4 py-2 text-sm">{formatarData(nota.data_entrada)}</td>
-                <td className="px-4 py-2 text-sm">
-                  <StatusBadge status={nota.status} />
-                </td>
-                <td className="px-4 py-2 text-sm">
-                  <div className="flex gap-2">
+            {notasFiltradas.map((n) => (
+              <tr
+                key={n.id}
+                style={{
+                  borderBottom: '1px solid #eee',
+                  background: n.status === 'Assinado' ? '#eafbe7' : '#fff',
+                }}
+              >
+                <td>{formatarData(n.data_entrega)}</td>
+                <td>{formatarData(n.data_vencimento)}</td>
+                <td>{n.numero_nf}</td>
+                <td>{n.fornecedor}</td>
+                <td>{n.observacao}</td>
+                <td>R$ {n.valor}</td>
+                <td>{n.parcelas}</td>
+                <td>{n.status}</td>
+                <td>{n.criado_por}</td>
+                <td>{n.assinado_por || '-'}</td>
+                <td style={{ display: 'flex', gap: 6 }}>
+                  {setor === 'Financeiro' && n.status !== 'Assinado' && (
                     <button
-                      onClick={() => handleEditarNota(nota)}
-                      className="text-blue-600 hover:text-blue-800"
+                      onClick={() => onAssinar(n.id)}
+                      style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
                     >
-                      Editar
+                      Assinar
                     </button>
-                    <button
-                      onClick={() => setExcluindoId(nota.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Excluir
-                    </button>
-                  </div>
+                  )}
+                  <button
+                    onClick={() => onEditar(n)}
+                    style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => setExcluindoId(n.id)}
+                    style={{ background: '#555', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
+                  >
+                    Excluir
+                  </button>
                 </td>
               </tr>
             ))}
@@ -251,63 +154,39 @@ export default function TabelaNotas({ notas, onRefresh }) {
         </table>
       </div>
 
-      <div className="mt-4 text-sm text-gray-600">
-        Mostrando {notasFiltradas.length} de {notas.length} notas
-      </div>
-
-      {modalOpen && (
-        <ModalNota
-          nota={notaEditando}
-          onClose={() => setModalOpen(false)}
-          onSave={() => {
-            setModalOpen(false)
-            onRefresh()
-          }}
-        />
-      )}
-
       {excluindoId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Confirmar exclusao</h3>
-            <p className="mb-4 text-gray-700">
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 12, width: 380 }}>
+            <h3 style={{ color: '#0B3D91' }}>Confirmar exclusao</h3>
+            <p style={{ color: '#333' }}>
               Tem certeza que deseja excluir esta nota fiscal? Esta acao e definitiva e nao pode ser desfeita.
             </p>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Digite o PIN para confirmar (1010):
-              </label>
-              <input
-                type="password"
-                value={pinExclusao}
-                onChange={(e) => setPinExclusao(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="****"
-                maxLength={4}
-              />
-              {erroExclusao && (
-                <p className="mt-2 text-sm text-red-600">{erroExclusao}</p>
-              )}
-            </div>
-
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={cancelarExclusao}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>Digite o PIN para confirmar:</label>
+            <input
+              type="password"
+              value={pinExclusao}
+              onChange={(e) => setPinExclusao(e.target.value)}
+              maxLength={4}
+              style={{ width: '100%', padding: 8, marginBottom: 10, borderRadius: 8, border: '1px solid #ccc' }}
+            />
+            {erroExclusao && <p style={{ color: '#C8102E', fontSize: 14 }}>{erroExclusao}</p>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button
                 onClick={confirmarExclusao}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', flex: 1 }}
               >
                 Excluir definitivamente
+              </button>
+              <button
+                onClick={cancelarExclusao}
+                style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', flex: 1 }}
+              >
+                Cancelar
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
