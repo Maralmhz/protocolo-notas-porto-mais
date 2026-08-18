@@ -118,11 +118,11 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a href="/financeiro" style={{ color: '#0B3D91', textDecoration: 'none', fontWeight: 'bold' }}>Financeiro</a>
           <span style={{ marginRight: 4 }}>Setor: <b>{setor}</b></span>
           <button onClick={() => setSetor(null)} style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Sair</button>
         </div>
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input
           placeholder="Buscar por NF ou fornecedor"
@@ -133,9 +133,7 @@ export default function Home() {
         <button onClick={novaNota} style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>+ Nova nota</button>
         <button onClick={exportarCSV} style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>Exportar CSV</button>
       </div>
-
       <TabelaNotas notas={notasFiltradas} setor={setor} onAssinar={assinar} onEditar={editar} onExcluir={carregar} />
-
       {modalAberto && (
         <ModalNota
           nota={notaEditando}
