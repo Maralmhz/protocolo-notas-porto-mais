@@ -31,7 +31,10 @@ export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar }
       const vencido = item.status !== 'pago' && item.data_vencimento < hoje;
       const valorFmt = Number(item.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
       const prioridadeTag = item.prioridade === 'maxima' ? ' [PRIORIDADE MAXIMA]' : item.prioridade === 'alta' ? ' [ALTA]' : '';
-      texto += `- ${item.credor} (${item.tipo_credor}) - Parcela ${item.parcela_atual}/${item.total_parcelas} - ${valorFmt} - Venc: ${formatarDataBR(item.data_vencimento)}${vencido ? ' (VENCIDO)' : ''} - Status: ${LABEL_STATUS[item.status] || item.status}${prioridadeTag}\n`;
+      const vencimentoTxt = item.status === 'agendado' && item.data_agendada
+        ? `Venc. original: ${formatarDataBR(item.data_vencimento)} -> Reagendado: ${formatarDataBR(item.data_agendada)}`
+        : `Venc: ${formatarDataBR(item.data_vencimento)}${vencido ? ' (VENCIDO)' : ''}`;
+      texto += `- ${item.credor} (${item.tipo_credor}) - Parcela ${item.parcela_atual}/${item.total_parcelas} - ${valorFmt} - ${vencimentoTxt} - Status: ${LABEL_STATUS[item.status] || item.status}${prioridadeTag}\n`;
     });
     navigator.clipboard.writeText(texto).then(() => {
       setCopiado(true);
@@ -58,6 +61,7 @@ export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar }
           <tbody>
             {itens.map((item) => {
               const vencido = item.status !== 'pago' && item.data_vencimento < hoje;
+              const reagendado = item.status === 'agendado' && item.data_agendada;
               return (
                 <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={td}>
@@ -70,7 +74,20 @@ export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar }
                   <td style={td}>{item.parcela_atual}/{item.total_parcelas}</td>
                   <td style={td}>{Number(item.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                   <td style={{ ...td, color: vencido ? '#C8102E' : '#333', fontWeight: vencido ? 'bold' : 'normal' }}>
-                    {formatarDataBR(item.data_vencimento)} {vencido && '(vencido)'}
+                    {reagendado ? (
+                      <div>
+                        <div style={{ textDecoration: 'line-through', color: '#999', fontSize: 12, fontWeight: 'normal' }}>
+                          Original: {formatarDataBR(item.data_vencimento)}
+                        </div>
+                        <div style={{ color: '#E08E00', fontWeight: 'bold' }}>
+                          Reagendado: {formatarDataBR(item.data_agendada)}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {formatarDataBR(item.data_vencimento)} {vencido && '(vencido)'}
+                      </>
+                    )}
                   </td>
                   <td style={td}>{LABEL_STATUS[item.status] || item.status}</td>
                   <td style={{ ...td, whiteSpace: 'nowrap' }}>
