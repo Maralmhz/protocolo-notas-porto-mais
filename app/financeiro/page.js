@@ -47,16 +47,6 @@ export default function FinanceiroPage() {
     carregar();
   }
 
-  async function bloquear(id, motivo_bloqueio) {
-    await fetch(`/api/financeiro/${id}`, { method: 'PUT', body: JSON.stringify({ acao: 'bloquear', setor, motivo_bloqueio }) });
-    carregar();
-  }
-
-  async function autorizar(id) {
-    await fetch(`/api/financeiro/${id}`, { method: 'PUT', body: JSON.stringify({ acao: 'autorizar', setor }) });
-    carregar();
-  }
-
   function editar(item) {
     setEditando(item);
     setModalAberto(true);
@@ -107,14 +97,12 @@ export default function FinanceiroPage() {
           <button onClick={() => setSetor(null)} style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}>Sair</button>
         </div>
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         <Cartao titulo="Vencidos" valor={vencidos.length} cor="#C8102E" />
         <Cartao titulo="Vencem hoje" valor={venceHoje.length} cor="#E08E00" />
         <Cartao titulo="Prioridade maxima" valor={maxima.length} cor="#C8102E" />
         <Cartao titulo="Total em aberto" valor={totalAberto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} cor="#0B3D91" />
       </div>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         <input
           placeholder="Buscar por credor"
@@ -135,23 +123,17 @@ export default function FinanceiroPage() {
         <select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #ccc' }}>
           <option value="todos">Todos os status</option>
           <option value="pendente">Pendente</option>
-          <option value="autorizado">Autorizado</option>
           <option value="agendado">Agendado</option>
           <option value="pago">Pago</option>
-          <option value="bloqueado">Bloqueado</option>
         </select>
         <button onClick={novo} style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>+ Novo lancamento</button>
       </div>
-
       <TabelaFinanceiro
         itens={filtrados}
         onEditar={editar}
         onPagar={marcarPago}
         onAgendar={agendar}
-        onBloquear={bloquear}
-        onAutorizar={autorizar}
       />
-
       {modalAberto && (
         <ModalLancamento
           item={editando}
@@ -163,7 +145,6 @@ export default function FinanceiroPage() {
     </div>
   );
 }
-
 function Cartao({ titulo, valor, cor }) {
   return (
     <div style={{ background: '#fff', border: `2px solid ${cor}`, borderRadius: 12, padding: 16 }}>
