@@ -1,8 +1,16 @@
 import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
+function toDateStr(valor) {
+  if (!valor) return null;
+  if (typeof valor === 'string') return valor.slice(0, 10);
+  if (valor instanceof Date) return valor.toISOString().slice(0, 10);
+  return String(valor).slice(0, 10);
+}
+
 function proximoVencimento(dataAtual) {
-  const data = new Date(`${dataAtual}T12:00:00`);
+  const dataStr = toDateStr(dataAtual);
+  const data = new Date(`${dataStr}T12:00:00`);
   const diaOriginal = data.getDate();
   data.setMonth(data.getMonth() + 1);
   if (data.getDate() !== diaOriginal) {
@@ -26,17 +34,22 @@ export async function PUT(req, { params }) {
       WHERE id = ${id} RETURNING *`;
     await sql`INSERT INTO financeiro_historico (lancamento_id, acao, setor, observacao) VALUES (${id}, 'Pago', ${setor}, ${campos.observacao || null})`;
 
-    if (row && row.parcela_atual < row.total_parcelas) {
-      const [novaParcela] = await sql`
-        INSERT INTO financeiro_lancamentos (
-          credor, tipo_credor, categoria, descricao, valor, data_vencimento,
-          prioridade, parcela_atual, total_parcelas, status, criado_por
-        ) VALUES (
-          ${row.credor}, ${row.tipo_credor}, ${row.categoria}, ${row.descricao}, ${row.valor},
-          ${proximoVencimento(row.data_vencimento)}, ${row.prioridade},
-          ${row.parcela_atual + 1}, ${row.total_parcelas}, 'pendente', ${setor}
-        ) RETURNING *`;
-      await sql`INSERT INTO financeiro_historico (lancamento_id, acao, setor, observacao) VALUES (${novaParcela.id}, 'Parcela gerada automaticamente', ${setor}, ${'Gerada apos pagamento da parcela ' + row.parcela_atual + '/' + row.total_parcelas})`;
+    if (row && Number(row.parcela_atual) < Number(row.total_parcelas)) {
+      try {
+        const novoVencimento = proximoVencimento(row.data_vencimento);
+        const [novaParcela] = await sql`
+          INSERT INTO financeiro_lancamentos (
+            credor, tipo_credor, categoria, descricao, valor, data_vencimento,
+            prioridade, parcela_atual, total_parcelas, status, criado_por
+          ) VALUES (
+            ${row.credor}, ${row.tipo_credor}, ${row.categoria}, ${row.descricao}, ${row.valor},
+            ${novoVencimento}, ${row.prioridade},
+            ${Number(row.parcela_atual) + 1}, ${row.total_parcelas}, 'pendente', ${setor}
+          ) RETURNING *`;
+        await sql`INSERT INTO financeiro_historico (lancamento_id, acao, setor, observacao) VALUES (${novaParcela.id}, 'Parcela gerada automaticamente', ${setor}, ${'Gerada apos pagamento da parcela ' + row.parcela_atual + '/' + row.total_parcelas})`;
+      } catch (err) {
+        console.error('Erro ao gerar proxima parcela:', err);
+      }
     }
 
     return Response.json(row);
