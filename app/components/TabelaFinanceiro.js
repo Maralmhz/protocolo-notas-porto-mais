@@ -12,13 +12,11 @@ function formatarDataBR(dataStr) {
   if (!ano || !mes || !dia) return soData;
   return `${dia}/${mes}/${ano}`;
 }
-
-export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar }) {
+export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar, onDesfazerPagamento }) {
   const [pagando, setPagando] = useState(null);
   const [agendando, setAgendando] = useState(null);
   const [copiado, setCopiado] = useState(false);
   const hoje = new Date().toISOString().slice(0, 10);
-
   function copiarParaWhatsapp() {
     const pendentes = itens.filter((i) => i.status !== 'pago');
     if (pendentes.length === 0) {
@@ -41,7 +39,6 @@ export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar }
       setTimeout(() => setCopiado(false), 2500);
     });
   }
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
@@ -96,6 +93,18 @@ export default function TabelaFinanceiro({ itens, onEditar, onPagar, onAgendar }
                         <button onClick={() => setPagando(item.id)} style={btn('#0B3D91')}>Pagar</button>
                         <button onClick={() => setAgendando(item.id)} style={btn('#E08E00')}>Agendar</button>
                       </>
+                    )}
+                    {item.status === 'pago' && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Desfazer o pagamento de ${item.credor} (parcela ${item.parcela_atual}/${item.total_parcelas})?\nIsto vai reverter para Pendente e remover a proxima parcela gerada automaticamente.`)) {
+                            onDesfazerPagamento(item.id);
+                          }
+                        }}
+                        style={btn('#C8102E')}
+                      >
+                        Desfazer
+                      </button>
                     )}
                     <button onClick={() => onEditar(item)} style={btn('#333')}>Editar</button>
                     {pagando === item.id && (
