@@ -37,32 +37,26 @@ export default function ModalLancamento({ item, tiposCredor, onSalvar, onFechar 
     <div style={overlay}>
       <div style={modal}>
         <h2 style={{ color: '#0B3D91', marginTop: 0 }}>{item ? 'Editar lancamento' : 'Novo lancamento'}</h2>
-
         <Label texto="Credor" />
         <input style={input} value={form.credor} onChange={(e) => campo('credor', e.target.value)} />
-
         <Label texto="Tipo de credor" />
         <select style={input} value={form.tipo_credor} onChange={(e) => campo('tipo_credor', e.target.value)}>
           {tiposCredor.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
-
         <Label texto="Categoria (opcional)" />
         <input style={input} value={form.categoria} onChange={(e) => campo('categoria', e.target.value)} />
-
         <Label texto="Descricao / observacao" />
         <input style={input} value={form.descricao} onChange={(e) => campo('descricao', e.target.value)} />
-
         <div style={{ display: 'flex', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <Label texto="Valor (R$)" />
             <input style={input} type="number" step="0.01" value={form.valor} onChange={(e) => campo('valor', e.target.value)} />
           </div>
           <div style={{ flex: 1 }}>
-            <Label texto="Vencimento" />
-            <input style={input} type="date" value={form.data_vencimento} onChange={(e) => campo('data_vencimento', e.target.value)} />
+            <Label texto="Vencimento (AAAA-MM-DD)" />
+            <input style={input} type="text" placeholder="2026-09-11" value={form.data_vencimento} onChange={(e) => campo('data_vencimento', e.target.value)} />
           </div>
         </div>
-
         <div style={{ display: 'flex', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <Label texto="Prioridade" />
@@ -84,7 +78,6 @@ export default function ModalLancamento({ item, tiposCredor, onSalvar, onFechar 
         <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
           Exibicao: {form.parcela_atual || 1}/{form.total_parcelas || 1}. Se for pagamento unico, deixe 1/1.
         </div>
-
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
           <button onClick={onFechar} style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>Cancelar</button>
           <button onClick={confirmar} style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer' }}>Salvar</button>
