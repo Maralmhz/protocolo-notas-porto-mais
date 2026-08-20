@@ -3,9 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import LoginPin from '../components/LoginPin';
 import TabelaFinanceiro from '../components/TabelaFinanceiro';
 import ModalLancamento from '../components/ModalLancamento';
-
 const TIPOS_CREDOR = ['fornecedor', 'prestador', 'associado', 'indenizacao', 'acordo', 'oficina', 'outros'];
-
 export default function FinanceiroPage() {
   const [setor, setSetor] = useState(null);
   const [lancamentos, setLancamentos] = useState([]);
@@ -15,17 +13,14 @@ export default function FinanceiroPage() {
   const [filtroPrioridade, setFiltroPrioridade] = useState('todas');
   const [filtroStatus, setFiltroStatus] = useState('todos');
   const [busca, setBusca] = useState('');
-
   useEffect(() => {
     if (setor) carregar();
   }, [setor]);
-
   async function carregar() {
     const res = await fetch('/api/financeiro');
     const data = await res.json();
     setLancamentos(data);
   }
-
   async function salvar(form) {
     if (form.id) {
       await fetch(`/api/financeiro/${form.id}`, { method: 'PUT', body: JSON.stringify({ ...form, setor }) });
@@ -36,27 +31,26 @@ export default function FinanceiroPage() {
     setEditando(null);
     carregar();
   }
-
   async function marcarPago(id, dados) {
     await fetch(`/api/financeiro/${id}`, { method: 'PUT', body: JSON.stringify({ acao: 'pagar', setor, ...dados }) });
     carregar();
   }
-
+  async function desfazerPagamento(id) {
+    await fetch(`/api/financeiro/${id}`, { method: 'PUT', body: JSON.stringify({ acao: 'desfazer_pagamento', setor }) });
+    carregar();
+  }
   async function agendar(id, data_agendada) {
     await fetch(`/api/financeiro/${id}`, { method: 'PUT', body: JSON.stringify({ acao: 'agendar', setor, data_agendada }) });
     carregar();
   }
-
   function editar(item) {
     setEditando(item);
     setModalAberto(true);
   }
-
   function novo() {
     setEditando(null);
     setModalAberto(true);
   }
-
   const filtrados = useMemo(() => {
     return lancamentos.filter((l) => {
       if (filtroTipo !== 'todos' && l.tipo_credor !== filtroTipo) return false;
@@ -66,15 +60,12 @@ export default function FinanceiroPage() {
       return true;
     });
   }, [lancamentos, filtroTipo, filtroPrioridade, filtroStatus, busca]);
-
   const hoje = new Date().toISOString().slice(0, 10);
   const vencidos = lancamentos.filter((l) => l.status !== 'pago' && l.data_vencimento < hoje);
   const venceHoje = lancamentos.filter((l) => l.status !== 'pago' && l.data_vencimento === hoje);
   const maxima = lancamentos.filter((l) => l.status !== 'pago' && l.prioridade === 'maxima');
   const totalAberto = lancamentos.filter((l) => l.status !== 'pago').reduce((s, l) => s + Number(l.valor), 0);
-
   if (!setor) return <LoginPin onLogin={setSetor} />;
-
   return (
     <div style={{ padding: 24, maxWidth: 1300, margin: '0 auto' }}>
       <div
@@ -133,6 +124,7 @@ export default function FinanceiroPage() {
         onEditar={editar}
         onPagar={marcarPago}
         onAgendar={agendar}
+        onDesfazerPagamento={desfazerPagamento}
       />
       {modalAberto && (
         <ModalLancamento
