@@ -55,6 +55,35 @@ export async function PUT(req, { params }) {
     return Response.json(row);
   }
 
+  if (acao === 'desfazer_pagamento') {
+    const [atual] = await sql`SELECT * FROM financeiro_lancamentos WHERE id = ${id}`;
+    if (!atual) {
+      return Response.json({ error: 'Lancamento nao encontrado' }, { status: 404 });
+    }
+    if (atual.status !== 'pago') {
+      return Response.json({ error: 'Este lancamento nao esta marcado como pago' }, { status: 400 });
+    }
+
+    const [proxima] = await sql`
+      SELECT * FROM financeiro_lancamentos
+      WHERE credor = ${atual.credor} AND total_parcelas = ${atual.total_parcelas}
+      AND parcela_atual = ${Number(atual.parcela_atual) + 1} AND status = 'pendente'
+      LIMIT 1`;
+
+    if (proxima) {
+      await sql`DELETE FROM financeiro_lancamentos WHERE id = ${proxima.id}`;
+      await sql`INSERT INTO financeiro_historico (lancamento_id, acao, setor, observacao) VALUES (${id}, 'Parcela seguinte removida', ${setor}, ${'Parcela ' + proxima.parcela_atual + '/' + proxima.total_parcelas + ' removida ao desfazer pagamento'})`;
+    }
+
+    const [row] = await sql`
+      UPDATE financeiro_lancamentos
+      SET status = 'pendente', data_pagamento = NULL, forma_pagamento = NULL,
+      comprovante_url = NULL, pago_por = NULL
+      WHERE id = ${id} RETURNING *`;
+    await sql`INSERT INTO financeiro_historico (lancamento_id, acao, setor, observacao) VALUES (${id}, 'Pagamento desfeito', ${setor}, ${campos.observacao || null})`;
+    return Response.json(row);
+  }
+
   if (acao === 'agendar') {
     const [row] = await sql`
       UPDATE financeiro_lancamentos
