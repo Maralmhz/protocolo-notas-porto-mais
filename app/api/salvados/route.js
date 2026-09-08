@@ -40,3 +40,34 @@ export async function POST(req) {
     RETURNING *`;
   return Response.json(row);
 }
+
+export async function PUT(req) {
+  const body = await req.json();
+  const {
+    id, evento, placa, veiculo, ano, data_indenizacao, valor_indenizacao,
+    valor_venda, despesas, comprador, data_venda, observacoes,
+  } = body;
+  const [row] = await sql`
+    UPDATE salvados SET
+      evento = ${evento},
+      placa = ${placa},
+      veiculo = ${veiculo},
+      ano = ${ano},
+      data_indenizacao = ${data_indenizacao || null},
+      valor_indenizacao = ${valor_indenizacao || 0},
+      valor_venda = ${valor_venda || 0},
+      despesas = ${despesas || 0},
+      comprador = ${comprador},
+      data_venda = ${data_venda || null},
+      observacoes = ${observacoes}
+    WHERE id = ${id}
+    RETURNING *`;
+  return Response.json(row);
+}
+
+export async function DELETE(req) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  await sql`DELETE FROM salvados WHERE id = ${id}`;
+  return Response.json({ ok: true });
+}
