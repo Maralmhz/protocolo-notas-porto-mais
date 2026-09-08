@@ -5,8 +5,7 @@ export default function LoginPin({ onLogin }) {
   const [pin, setPin] = useState('');
 
   function entrar() {
-    if (pin === '1010') onLogin('Eventos');
-    else if (pin === '2020') onLogin('Financeiro');
+    if (pin === '1010') onLogin('Geral');
     else alert('PIN invalido');
   }
 
