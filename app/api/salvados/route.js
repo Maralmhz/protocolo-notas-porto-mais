@@ -1,7 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
-export async function GET() {
+export async function GET(req) {
   await sql`
     CREATE TABLE IF NOT EXISTS salvados (
       id SERIAL PRIMARY KEY,
@@ -19,6 +19,13 @@ export async function GET() {
       criado_em TIMESTAMP DEFAULT now()
     )
   `;
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  const data_venda = searchParams.get('data_venda');
+  if (id && data_venda) {
+    await sql`UPDATE salvados SET data_venda = ${data_venda} WHERE id = ${id}`;
+    return Response.json({ ok: true, updated: id });
+  }
   const rows = await sql`SELECT * FROM salvados ORDER BY criado_em DESC`;
   return Response.json(rows);
 }
