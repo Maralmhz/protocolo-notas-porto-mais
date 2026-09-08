@@ -105,6 +105,7 @@ export default function SalvadosPage() {
   const pct = totalIndenizado > 0 ? (liquido / totalIndenizado) * 100 : 0;
 
   const btn = (cor) => ({ background: cor, color: '#fff', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 12, marginRight: 4 });
+  const inp = { padding: 8, borderRadius: 6, border: '1px solid #ccc' };
 
   return (
     <AuthGate>
@@ -121,17 +122,17 @@ export default function SalvadosPage() {
           </div>
           <form onSubmit={salvar} style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 24, background: editId ? '#fff8e1' : '#f5f5f5', padding: 16, borderRadius: 8, border: editId ? '2px solid #f0a500' : '1px solid #ddd' }}>
             {editId && <div style={{ gridColumn: 'span 4', fontWeight: 'bold', color: '#f0a500' }}>Editando registro ID {editId}</div>}
-            <input placeholder="No Evento" value={form.evento} onChange={(e) => campo('evento', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input placeholder="Placa" value={form.placa} onChange={(e) => campo('placa', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input placeholder="Veiculo" value={form.veiculo} onChange={(e) => campo('veiculo', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input placeholder="Ano" value={form.ano} onChange={(e) => campo('ano', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input type="date" value={form.data_indenizacao} onChange={(e) => campo('data_indenizacao', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input type="number" placeholder="Valor indenizacao" value={form.valor_indenizacao} onChange={(e) => campo('valor_indenizacao', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input type="number" placeholder="Valor venda" value={form.valor_venda} onChange={(e) => campo('valor_venda', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input type="number" placeholder="Despesas" value={form.despesas} onChange={(e) => campo('despesas', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input placeholder="Comprador" value={form.comprador} onChange={(e) => campo('comprador', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input type="date" value={form.data_venda} onChange={(e) => campo('data_venda', e.target.value)} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
-            <input placeholder="Observacoes" value={form.observacoes} onChange={(e) => campo('observacoes', e.target.value)} style={{ gridColumn: 'span 2', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+            <input aria-label="No Evento" placeholder="No Evento" value={form.evento} onChange={(e) => campo('evento', e.target.value)} style={inp} />
+            <input aria-label="Placa" placeholder="Placa" value={form.placa} onChange={(e) => campo('placa', e.target.value)} style={inp} />
+            <input aria-label="Veiculo" placeholder="Veiculo" value={form.veiculo} onChange={(e) => campo('veiculo', e.target.value)} style={inp} />
+            <input aria-label="Ano" placeholder="Ano" value={form.ano} onChange={(e) => campo('ano', e.target.value)} style={inp} />
+            <input aria-label="Data indenizacao" type="date" value={form.data_indenizacao} onChange={(e) => campo('data_indenizacao', e.target.value)} style={inp} />
+            <input aria-label="Valor indenizacao" type="number" placeholder="Valor indenizacao" value={form.valor_indenizacao} onChange={(e) => campo('valor_indenizacao', e.target.value)} style={inp} />
+            <input aria-label="Valor venda" type="number" placeholder="Valor venda" value={form.valor_venda} onChange={(e) => campo('valor_venda', e.target.value)} style={inp} />
+            <input aria-label="Despesas" type="number" placeholder="Despesas" value={form.despesas} onChange={(e) => campo('despesas', e.target.value)} style={inp} />
+            <input aria-label="Comprador" placeholder="Comprador" value={form.comprador} onChange={(e) => campo('comprador', e.target.value)} style={inp} />
+            <input aria-label="Data venda" type="date" value={form.data_venda} onChange={(e) => campo('data_venda', e.target.value)} style={inp} />
+            <input aria-label="Observacoes" placeholder="Observacoes" value={form.observacoes} onChange={(e) => campo('observacoes', e.target.value)} style={{ ...inp, gridColumn: 'span 2' }} />
             <div style={{ gridColumn: 'span 4', display: 'flex', gap: 8 }}>
               <button type="submit" style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer', fontWeight: 'bold' }}>
                 {editId ? 'Salvar edicao' : 'Salvar'}
@@ -139,7 +140,7 @@ export default function SalvadosPage() {
               {editId && <button type="button" onClick={cancelarEdicao} style={{ background: '#999', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', cursor: 'pointer' }}>Cancelar</button>}
             </div>
           </form>
-          <input placeholder="Buscar por placa, veiculo ou evento" value={busca} onChange={(e) => setBusca(e.target.value)} style={{ width: '100%', padding: 10, marginBottom: 12, borderRadius: 8, border: '1px solid #ccc', boxSizing: 'border-box' }} />
+          <input aria-label="Buscar" placeholder="Buscar por placa, veiculo ou evento" value={busca} onChange={(e) => setBusca(e.target.value)} style={{ width: '100%', padding: 10, marginBottom: 12, borderRadius: 8, border: '1px solid #ccc', boxSizing: 'border-box' }} />
           {carregando ? <p>Carregando...</p> : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
