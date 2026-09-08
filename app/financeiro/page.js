@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import LoginPin from '../components/LoginPin';
 import TabelaFinanceiro from '../components/TabelaFinanceiro';
+import MenuPrincipal from '../components/MenuPrincipal';
 import ModalLancamento from '../components/ModalLancamento';
 const TIPOS_CREDOR = ['fornecedor', 'prestador', 'associado', 'indenizacao', 'acordo', 'oficina', 'outros'];
 export default function FinanceiroPage() {
@@ -67,6 +68,8 @@ export default function FinanceiroPage() {
   const totalAberto = lancamentos.filter((l) => l.status !== 'pago').reduce((s, l) => s + Number(l.valor), 0);
   if (!setor) return <LoginPin onLogin={setSetor} />;
   return (
+    <>
+      <MenuPrincipal />
     <div style={{ padding: 24, maxWidth: 1300, margin: '0 auto' }}>
       <div
         style={{
@@ -135,6 +138,7 @@ export default function FinanceiroPage() {
         />
       )}
     </div>
+</>
   );
 }
 function Cartao({ titulo, valor, cor }) {
