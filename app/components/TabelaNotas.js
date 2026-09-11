@@ -74,8 +74,8 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
     setErroExclusao('');
   }
 
-  const thStyle = { padding: '10px 8px', textAlign: 'left', whiteSpace: 'nowrap' };
-  const tdStyle = { padding: '8px', verticalAlign: 'middle', whiteSpace: 'nowrap' };
+  const th = { padding: '10px 8px', textAlign: 'left', whiteSpace: 'nowrap' };
+  const td = { padding: '8px', verticalAlign: 'middle', whiteSpace: 'nowrap' };
 
   return (
     <div>
@@ -96,17 +96,15 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', fontSize: 13 }}>
           <thead style={{ background: '#0B3D91', color: '#fff' }}>
             <tr>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Entrega</th>
-              <th style={thStyle}>Vencimento</th>
-              <th style={thStyle}>NF</th>
-              <th style={thStyle}>Fornecedor</th>
-              <th style={thStyle}>Observacao</th>
-              <th style={thStyle}>Valor</th>
-              <th style={thStyle}>Parcelas</th>
-              <th style={thStyle}>Lancado por</th>
-              <th style={thStyle}>Assinado por</th>
-              <th style={{ ...thStyle, position: 'sticky', right: 0, background: '#0B3D91', zIndex: 2, minWidth: 160 }}>Acoes</th>
+              <th style={th}>Status</th>
+              <th style={th}>Entrega</th>
+              <th style={th}>Vencimento</th>
+              <th style={th}>NF</th>
+              <th style={th}>Fornecedor</th>
+              <th style={th}>Observacao</th>
+              <th style={th}>Valor</th>
+              <th style={th}>Parcelas</th>
+              <th style={th}>Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -118,46 +116,43 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
                   background: n.status === 'Assinado' ? '#eafbe7' : '#fff',
                 }}
               >
-                <td style={tdStyle}>
+                <td style={td}>
                   <span style={{
                     background: n.status === 'Assinado' ? '#28a745' : '#6c757d',
                     color: '#fff',
                     borderRadius: 12,
                     padding: '2px 10px',
                     fontSize: 12,
-                    whiteSpace: 'nowrap'
                   }}>
                     {n.status}
                   </span>
                 </td>
-                <td style={tdStyle}>{formatarData(n.data_entrega)}</td>
-                <td style={tdStyle}>{formatarData(n.data_vencimento)}</td>
-                <td style={tdStyle}>{n.numero_nf}</td>
-                <td style={tdStyle}>{n.fornecedor}</td>
-                <td style={tdStyle}>{n.observacao}</td>
-                <td style={tdStyle}>R$ {n.valor}</td>
-                <td style={tdStyle}>{n.parcelas}</td>
-                <td style={tdStyle}>{n.criado_por}</td>
-                <td style={tdStyle}>{n.assinado_por || '-'}</td>
-                <td style={{ ...tdStyle, position: 'sticky', right: 0, background: n.status === 'Assinado' ? '#eafbe7' : '#fff', zIndex: 1 }}>
+                <td style={td}>{formatarData(n.data_entrega)}</td>
+                <td style={td}>{formatarData(n.data_vencimento)}</td>
+                <td style={td}>{n.numero_nf}</td>
+                <td style={td}>{n.fornecedor}</td>
+                <td style={td}>{n.observacao}</td>
+                <td style={td}>R$ {n.valor}</td>
+                <td style={td}>{n.parcelas}</td>
+                <td style={td}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     {n.status !== 'Assinado' && (
                       <button
                         onClick={() => onAssinar(n.id)}
-                        style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
+                        style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12 }}
                       >
                         Assinar
                       </button>
                     )}
                     <button
                       onClick={() => onEditar(n)}
-                      style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
+                      style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12 }}
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => setExcluindoId(n.id)}
-                      style={{ background: '#555', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap' }}
+                      style={{ background: '#555', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12 }}
                     >
                       Excluir
                     </button>
