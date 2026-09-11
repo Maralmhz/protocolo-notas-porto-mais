@@ -7,10 +7,6 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
   const [pinExclusao, setPinExclusao] = useState('');
   const [erroExclusao, setErroExclusao] = useState('');
 
-  const [assinandoId, setAssinandoId] = useState(null);
-  const [pinAssinatura, setPinAssinatura] = useState('');
-  const [erroAssinatura, setErroAssinatura] = useState('');
-
   function confirmarExclusao() {
     if (pinExclusao !== '1010') {
       setErroExclusao('PIN incorreto!');
@@ -20,17 +16,6 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
     setExcluindoId(null);
     setPinExclusao('');
     setErroExclusao('');
-  }
-
-  function confirmarAssinatura() {
-    if (pinAssinatura !== '2020') {
-      setErroAssinatura('PIN incorreto!');
-      return;
-    }
-    onAssinar(assinandoId);
-    setAssinandoId(null);
-    setPinAssinatura('');
-    setErroAssinatura('');
   }
 
   return (
@@ -58,11 +43,7 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
               </td>
               <td className="py-2 px-4 border-b">
                 <button
-                  onClick={() => {
-                    setAssinandoId(n.id);
-                    setPinAssinatura('');
-                    setErroAssinatura('');
-                  }}
+                  onClick={() => onAssinar(n.id)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
                   disabled={n.assinada}
                 >
@@ -83,46 +64,6 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
           ))}
         </tbody>
       </table>
-
-      {assinandoId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Confirmar Assinatura</h3>
-            <p className="mb-4">Digite o PIN para assinar esta nota:</p>
-            <input
-              type="password"
-              maxLength={4}
-              value={pinAssinatura}
-              onChange={(e) => setPinAssinatura(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-lg text-center tracking-widest"
-              placeholder="****"
-              autoFocus
-            />
-            {erroAssinatura && (
-              <p className="text-red-600 mb-4">{erroAssinatura}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={confirmarAssinatura}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                style={{ backgroundColor: '#28a745' }}
-              >
-                Confirmar assinatura
-              </button>
-              <button
-                onClick={() => {
-                  setAssinandoId(null);
-                  setPinAssinatura('');
-                  setErroAssinatura('');
-                }}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {excluindoId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
