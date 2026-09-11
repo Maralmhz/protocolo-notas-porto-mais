@@ -96,7 +96,6 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', fontSize: 13 }}>
           <thead style={{ background: '#0B3D91', color: '#fff' }}>
             <tr>
-              <th style={{ ...thStyle, position: 'sticky', left: 0, background: '#0B3D91', zIndex: 2, minWidth: 160 }}>Acoes</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Entrega</th>
               <th style={thStyle}>Vencimento</th>
@@ -107,6 +106,7 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
               <th style={thStyle}>Parcelas</th>
               <th style={thStyle}>Lancado por</th>
               <th style={thStyle}>Assinado por</th>
+              <th style={{ ...thStyle, position: 'sticky', right: 0, background: '#0B3D91', zIndex: 2, minWidth: 160 }}>Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -118,7 +118,28 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
                   background: n.status === 'Assinado' ? '#eafbe7' : '#fff',
                 }}
               >
-                <td style={{ ...tdStyle, position: 'sticky', left: 0, background: n.status === 'Assinado' ? '#eafbe7' : '#fff', zIndex: 1 }}>
+                <td style={tdStyle}>
+                  <span style={{
+                    background: n.status === 'Assinado' ? '#28a745' : '#6c757d',
+                    color: '#fff',
+                    borderRadius: 12,
+                    padding: '2px 10px',
+                    fontSize: 12,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {n.status}
+                  </span>
+                </td>
+                <td style={tdStyle}>{formatarData(n.data_entrega)}</td>
+                <td style={tdStyle}>{formatarData(n.data_vencimento)}</td>
+                <td style={tdStyle}>{n.numero_nf}</td>
+                <td style={tdStyle}>{n.fornecedor}</td>
+                <td style={tdStyle}>{n.observacao}</td>
+                <td style={tdStyle}>R$ {n.valor}</td>
+                <td style={tdStyle}>{n.parcelas}</td>
+                <td style={tdStyle}>{n.criado_por}</td>
+                <td style={tdStyle}>{n.assinado_por || '-'}</td>
+                <td style={{ ...tdStyle, position: 'sticky', right: 0, background: n.status === 'Assinado' ? '#eafbe7' : '#fff', zIndex: 1 }}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     {n.status !== 'Assinado' && (
                       <button
@@ -142,27 +163,6 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
                     </button>
                   </div>
                 </td>
-                <td style={tdStyle}>
-                  <span style={{
-                    background: n.status === 'Assinado' ? '#28a745' : '#6c757d',
-                    color: '#fff',
-                    borderRadius: 12,
-                    padding: '2px 10px',
-                    fontSize: 12,
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {n.status}
-                  </span>
-                </td>
-                <td style={tdStyle}>{formatarData(n.data_entrega)}</td>
-                <td style={tdStyle}>{formatarData(n.data_vencimento)}</td>
-                <td style={tdStyle}>{n.numero_nf}</td>
-                <td style={tdStyle}>{n.fornecedor}</td>
-                <td style={tdStyle}>{n.observacao}</td>
-                <td style={tdStyle}>R$ {n.valor}</td>
-                <td style={tdStyle}>{n.parcelas}</td>
-                <td style={tdStyle}>{n.criado_por}</td>
-                <td style={tdStyle}>{n.assinado_por || '-'}</td>
               </tr>
             ))}
           </tbody>
