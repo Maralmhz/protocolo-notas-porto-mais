@@ -35,7 +35,7 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
             <tr key={n.id} className="hover:bg-gray-50">
               <td className="py-2 px-4 border-b">{n.id}</td>
               <td className="py-2 px-4 border-b">{n.numeroNota}</td>
-              <td className="py-2 px-4 border-b">{n.valor ? `R$ ${n.valor.toFixed(2)}` : 'R$ 0.00'}</td>
+              <td className="py-2 px-4 border-b">{n.valor != null ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
               <td className="py-2 px-4 border-b">
                 <span className={`px-2 py-1 rounded ${n.assinada ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                   {n.assinada ? 'Assinada' : 'Pendente'}
