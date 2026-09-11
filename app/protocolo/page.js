@@ -5,20 +5,24 @@ import AuthGate from '../components/AuthGate';
 import TabelaNotas from '../components/TabelaNotas';
 import ModalNota from '../components/ModalNota';
 import MenuPrincipal from '../components/MenuPrincipal';
+
 export default function ProtocoloPage() {
   const setor = 'Geral';
   const [notas, setNotas] = useState([]);
   const [modalAberto, setModalAberto] = useState(false);
   const [notaEditando, setNotaEditando] = useState(null);
   const [filtro, setFiltro] = useState('');
+
   useEffect(() => {
     carregar();
   }, []);
+
   async function carregar() {
     const res = await fetch('/api/notas');
     const data = await res.json();
     setNotas(data);
   }
+
   async function salvar(form) {
     if (form.id) {
       await fetch(`/api/notas/${form.id}`, {
@@ -35,6 +39,7 @@ export default function ProtocoloPage() {
     setNotaEditando(null);
     carregar();
   }
+
   async function assinar(id) {
     await fetch(`/api/notas/${id}`, {
       method: 'PUT',
@@ -42,14 +47,17 @@ export default function ProtocoloPage() {
     });
     carregar();
   }
+
   function editar(nota) {
     setNotaEditando(nota);
     setModalAberto(true);
   }
+
   function novaNota() {
     setNotaEditando(null);
     setModalAberto(true);
   }
+
   function exportarCSV() {
     const linhas = [
       ['Entrega', 'Vencimento', 'NF', 'Fornecedor', 'Observacao', 'Valor', 'Parcelas', 'Status', 'Lancado por', 'Assinado por'],
@@ -65,10 +73,12 @@ export default function ProtocoloPage() {
     a.download = 'notas_fiscais.csv';
     a.click();
   }
+
   const notasFiltradas = notas.filter((n) =>
     (n.numero_nf || '').toLowerCase().includes(filtro.toLowerCase()) ||
     (n.fornecedor || '').toLowerCase().includes(filtro.toLowerCase())
   );
+
   return (
     <AuthGate>
       <div>
