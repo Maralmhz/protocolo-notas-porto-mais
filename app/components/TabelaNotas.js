@@ -89,7 +89,6 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
           ))}
         </select>
       </div>
-
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ background: '#0B3D91', color: '#fff' }}>
@@ -127,7 +126,7 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
                 <td>{n.criado_por}</td>
                 <td>{n.assinado_por || '-'}</td>
                 <td style={{ display: 'flex', gap: 6 }}>
-                  {setor === 'Financeiro' && n.status !== 'Assinado' && (
+                  {n.status !== 'Assinado' && (
                     <button
                       onClick={() => onAssinar(n.id)}
                       style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
@@ -153,7 +152,6 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
           </tbody>
         </table>
       </div>
-
       {excluindoId && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
           <div style={{ background: '#fff', padding: 24, borderRadius: 12, width: 380 }}>
