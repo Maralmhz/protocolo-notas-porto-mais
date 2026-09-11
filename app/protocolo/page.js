@@ -60,9 +60,9 @@ export default function ProtocoloPage() {
 
   function exportarCSV() {
     const linhas = [
-      ['Entrega', 'Vencimento', 'NF', 'Fornecedor', 'Observacao', 'Valor', 'Parcelas', 'Status', 'Lancado por', 'Assinado por'],
+      ['Entrega', 'Vencimento', 'NF', 'Fornecedor', 'Observacao', 'Valor', 'Parcelas', 'Status'],
       ...notas.map((n) => [
-        n.data_entrega, n.data_vencimento, n.numero_nf, n.fornecedor, n.observacao, n.valor, n.parcelas, n.status, n.criado_por, n.assinado_por,
+        n.data_entrega, n.data_vencimento, n.numero_nf, n.fornecedor, n.observacao, n.valor, n.parcelas, n.status,
       ]),
     ];
     const csv = linhas.map((l) => l.map((c) => `"${c ?? ''}"`).join(';')).join('\n');
@@ -83,7 +83,7 @@ export default function ProtocoloPage() {
     <AuthGate>
       <div>
         <MenuPrincipal />
-        <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ padding: '24px 32px' }}>
           <div
             style={{
               display: 'flex',
