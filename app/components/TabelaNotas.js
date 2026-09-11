@@ -24,9 +24,13 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
         <thead>
           <tr className="bg-gray-100">
             <th className="py-2 px-4 border-b text-left">ID</th>
-            <th className="py-2 px-4 border-b text-left">Nota</th>
+            <th className="py-2 px-4 border-b text-left">Numero NF</th>
+            <th className="py-2 px-4 border-b text-left">Fornecedor</th>
             <th className="py-2 px-4 border-b text-left">Valor</th>
+            <th className="py-2 px-4 border-b text-left">Data Entrega</th>
+            <th className="py-2 px-4 border-b text-left">Data Vencimento</th>
             <th className="py-2 px-4 border-b text-left">Status</th>
+            <th className="py-2 px-4 border-b text-left">Observacao</th>
             <th className="py-2 px-4 border-b text-left">Acoes</th>
           </tr>
         </thead>
@@ -34,18 +38,22 @@ export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
           {notas?.map((n) => (
             <tr key={n.id} className="hover:bg-gray-50">
               <td className="py-2 px-4 border-b">{n.id}</td>
-              <td className="py-2 px-4 border-b">{n.numeroNota}</td>
+              <td className="py-2 px-4 border-b">{n.numero_nf}</td>
+              <td className="py-2 px-4 border-b">{n.fornecedor}</td>
               <td className="py-2 px-4 border-b">{n.valor != null && n.valor !== '' ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
+              <td className="py-2 px-4 border-b">{n.data_entrega ? new Date(n.data_entrega).toLocaleDateString('pt-BR') : '-'}</td>
+              <td className="py-2 px-4 border-b">{n.data_vencimento ? new Date(n.data_vencimento).toLocaleDateString('pt-BR') : '-'}</td>
               <td className="py-2 px-4 border-b">
-                <span className={`px-2 py-1 rounded ${n.assinada ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                  {n.assinada ? 'Assinada' : 'Pendente'}
+                <span className={`px-2 py-1 rounded ${n.status === 'Assinado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {n.status || 'Pendente'}
                 </span>
               </td>
+              <td className="py-2 px-4 border-b max-w-xs truncate">{n.observacao}</td>
               <td className="py-2 px-4 border-b">
                 <button
                   onClick={() => onAssinar(n.id)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
-                  disabled={n.assinada}
+                  disabled={n.status === 'Assinado'}
                 >
                   Assinar
                 </button>
