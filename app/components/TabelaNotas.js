@@ -74,9 +74,6 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
     setErroExclusao('');
   }
 
-  const th = { padding: '10px 8px', textAlign: 'left', whiteSpace: 'nowrap' };
-  const td = { padding: '8px', verticalAlign: 'middle', whiteSpace: 'nowrap' };
-
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
@@ -93,18 +90,18 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
         </select>
       </div>
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', fontSize: 13 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead style={{ background: '#0B3D91', color: '#fff' }}>
             <tr>
-              <th style={th}>Status</th>
-              <th style={th}>Entrega</th>
-              <th style={th}>Vencimento</th>
-              <th style={th}>NF</th>
-              <th style={th}>Fornecedor</th>
-              <th style={th}>Observacao</th>
-              <th style={th}>Valor</th>
-              <th style={th}>Parcelas</th>
-              <th style={th}>Acoes</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Entrega</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Vencimento</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>NF</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Fornecedor</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Observacao</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Valor</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Parcelas</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Status</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left' }}>Acao</th>
             </tr>
           </thead>
           <tbody>
@@ -116,43 +113,33 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
                   background: n.status === 'Assinado' ? '#eafbe7' : '#fff',
                 }}
               >
-                <td style={td}>
-                  <span style={{
-                    background: n.status === 'Assinado' ? '#28a745' : '#6c757d',
-                    color: '#fff',
-                    borderRadius: 12,
-                    padding: '2px 10px',
-                    fontSize: 12,
-                  }}>
-                    {n.status}
-                  </span>
-                </td>
-                <td style={td}>{formatarData(n.data_entrega)}</td>
-                <td style={td}>{formatarData(n.data_vencimento)}</td>
-                <td style={td}>{n.numero_nf}</td>
-                <td style={td}>{n.fornecedor}</td>
-                <td style={td}>{n.observacao}</td>
-                <td style={td}>R$ {n.valor}</td>
-                <td style={td}>{n.parcelas}</td>
-                <td style={td}>
-                  <div style={{ display: 'flex', gap: 4 }}>
+                <td style={{ padding: '8px 12px' }}>{formatarData(n.data_entrega)}</td>
+                <td style={{ padding: '8px 12px' }}>{formatarData(n.data_vencimento)}</td>
+                <td style={{ padding: '8px 12px' }}>{n.numero_nf}</td>
+                <td style={{ padding: '8px 12px' }}>{n.fornecedor}</td>
+                <td style={{ padding: '8px 12px' }}>{n.observacao}</td>
+                <td style={{ padding: '8px 12px' }}>R$ {n.valor}</td>
+                <td style={{ padding: '8px 12px' }}>{n.parcelas}</td>
+                <td style={{ padding: '8px 12px' }}>{n.status}</td>
+                <td style={{ padding: '8px 12px' }}>
+                  <div style={{ display: 'flex', gap: 6 }}>
                     {n.status !== 'Assinado' && (
                       <button
                         onClick={() => onAssinar(n.id)}
-                        style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12 }}
+                        style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
                       >
                         Assinar
                       </button>
                     )}
                     <button
                       onClick={() => onEditar(n)}
-                      style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12 }}
+                      style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => setExcluindoId(n.id)}
-                      style={{ background: '#555', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontSize: 12 }}
+                      style={{ background: '#555', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
                     >
                       Excluir
                     </button>
@@ -167,7 +154,9 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
           <div style={{ background: '#fff', padding: 24, borderRadius: 12, width: 380 }}>
             <h3 style={{ color: '#0B3D91' }}>Confirmar exclusao</h3>
-            <p style={{ color: '#333' }}>Tem certeza que deseja excluir esta nota fiscal? Esta acao e definitiva.</p>
+            <p style={{ color: '#333' }}>
+              Tem certeza que deseja excluir esta nota fiscal? Esta acao e definitiva e nao pode ser desfeita.
+            </p>
             <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>Digite o PIN para confirmar:</label>
             <input
               type="password"
