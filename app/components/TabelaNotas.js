@@ -1,101 +1,183 @@
 'use client';
+import { useState } from 'react';
 
-import React, { useState } from 'react';
+function formatarData(data) {
+  if (!data) return '-';
+  const str = String(data).slice(0, 10);
+  const [ano, mes, dia] = str.split('-');
+  if (!ano || !mes || !dia) return '-';
+  return `${dia}/${mes}/${ano}`;
+}
 
-export default function TabelaNotas({ notas, onAssinar, onExcluir }) {
+const meses = [
+  { valor: '01', nome: 'Janeiro' },
+  { valor: '02', nome: 'Fevereiro' },
+  { valor: '03', nome: 'Marco' },
+  { valor: '04', nome: 'Abril' },
+  { valor: '05', nome: 'Maio' },
+  { valor: '06', nome: 'Junho' },
+  { valor: '07', nome: 'Julho' },
+  { valor: '08', nome: 'Agosto' },
+  { valor: '09', nome: 'Setembro' },
+  { valor: '10', nome: 'Outubro' },
+  { valor: '11', nome: 'Novembro' },
+  { valor: '12', nome: 'Dezembro' },
+];
+
+export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExcluir }) {
+  const [mesFiltro, setMesFiltro] = useState('todos');
   const [excluindoId, setExcluindoId] = useState(null);
   const [pinExclusao, setPinExclusao] = useState('');
   const [erroExclusao, setErroExclusao] = useState('');
 
-  function confirmarExclusao() {
+  const notasOrdenadas = [...notas].sort((a, b) => {
+    const dataA = new Date(a.data_entrega || 0);
+    const dataB = new Date(b.data_entrega || 0);
+    return dataB - dataA;
+  });
+
+  const notasFiltradas = notasOrdenadas.filter((n) => {
+    if (mesFiltro === 'todos') return true;
+    if (!n.data_vencimento) return false;
+    const mesVencimento = String(n.data_vencimento).slice(0, 10).split('-')[1];
+    return mesVencimento === mesFiltro;
+  });
+
+  async function confirmarExclusao() {
     if (pinExclusao !== '1010') {
       setErroExclusao('PIN incorreto!');
       return;
     }
-    onExcluir(excluindoId);
+    try {
+      const res = await fetch(`/api/notas/${excluindoId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pinExclusao }),
+      });
+      if (res.ok) {
+        setExcluindoId(null);
+        setPinExclusao('');
+        setErroExclusao('');
+        onExcluir && onExcluir();
+      } else {
+        const data = await res.json();
+        setErroExclusao(data.error || 'Erro ao excluir');
+      }
+    } catch (e) {
+      setErroExclusao('Erro ao excluir nota');
+    }
+  }
+
+  function cancelarExclusao() {
     setExcluindoId(null);
     setPinExclusao('');
     setErroExclusao('');
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="py-2 px-4 border-b text-left">ID</th>
-            <th className="py-2 px-4 border-b text-left">Nota</th>
-            <th className="py-2 px-4 border-b text-left">Valor</th>
-            <th className="py-2 px-4 border-b text-left">Status</th>
-            <th className="py-2 px-4 border-b text-left">Acoes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {notas?.map((n) => (
-            <tr key={n.id} className="hover:bg-gray-50">
-              <td className="py-2 px-4 border-b">{n.id}</td>
-              <td className="py-2 px-4 border-b">{n.numeroNota}</td>
-              <td className="py-2 px-4 border-b">{n.valor ? `R$ ${n.valor.toFixed(2)}` : 'R$ 0.00'}</td>
-              <td className="py-2 px-4 border-b">
-                <span className={`px-2 py-1 rounded ${n.assinada ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                  {n.assinada ? 'Assinada' : 'Pendente'}
-                </span>
-              </td>
-              <td className="py-2 px-4 border-b">
-                <button
-                  onClick={() => onAssinar(n.id)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
-                  disabled={n.assinada}
-                >
-                  Assinar
-                </button>
-                <button
-                  onClick={() => {
-                    setExcluindoId(n.id);
-                    setPinExclusao('');
-                    setErroExclusao('');
-                  }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                >
-                  Excluir
-                </button>
-              </td>
-            </tr>
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+        <label style={{ fontSize: 14, color: '#333' }}>Filtrar por mes de vencimento:</label>
+        <select
+          value={mesFiltro}
+          onChange={(e) => setMesFiltro(e.target.value)}
+          style={{ padding: 8, borderRadius: 8, border: '1px solid #ccc' }}
+        >
+          <option value="todos">Todos os meses</option>
+          {meses.map((m) => (
+            <option key={m.valor} value={m.valor}>{m.nome}</option>
           ))}
-        </tbody>
-      </table>
-
+        </select>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
+          <thead style={{ background: '#0B3D91', color: '#fff' }}>
+            <tr>
+              <th>Entrega</th>
+              <th>Vencimento</th>
+              <th>NF</th>
+              <th>Fornecedor</th>
+              <th>Observacao</th>
+              <th>Valor</th>
+              <th>Parcelas</th>
+              <th>Status</th>
+              <th>Lancado por</th>
+              <th>Assinado por</th>
+              <th>Acao</th>
+            </tr>
+          </thead>
+          <tbody>
+            {notasFiltradas.map((n) => (
+              <tr
+                key={n.id}
+                style={{
+                  borderBottom: '1px solid #eee',
+                  background: n.status === 'Assinado' ? '#eafbe7' : '#fff',
+                }}
+              >
+                <td style={{ padding: '8px 12px' }}>{formatarData(n.data_entrega)}</td>
+                <td style={{ padding: '8px 12px' }}>{formatarData(n.data_vencimento)}</td>
+                <td style={{ padding: '8px 12px' }}>{n.numero_nf}</td>
+                <td style={{ padding: '8px 12px' }}>{n.fornecedor}</td>
+                <td style={{ padding: '8px 12px' }}>{n.observacao}</td>
+                <td style={{ padding: '8px 12px' }}>R$ {n.valor}</td>
+                <td style={{ padding: '8px 12px' }}>{n.parcelas}</td>
+                <td style={{ padding: '8px 12px' }}>{n.status}</td>
+                <td style={{ padding: '8px 12px' }}>{n.criado_por}</td>
+                <td style={{ padding: '8px 12px' }}>{n.assinado_por || '-'}</td>
+                <td style={{ padding: '8px 12px', display: 'flex', gap: 6 }}>
+                  {n.status !== 'Assinado' && (
+                    <button
+                      onClick={() => onAssinar(n.id)}
+                      style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
+                    >
+                      Assinar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => onEditar(n)}
+                    style={{ background: '#0B3D91', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => setExcluindoId(n.id)}
+                    style={{ background: '#555', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {excluindoId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Confirmar Exclusao</h3>
-            <p className="mb-4">Digite o PIN para excluir esta nota:</p>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 12, width: 380 }}>
+            <h3 style={{ color: '#0B3D91' }}>Confirmar exclusao</h3>
+            <p style={{ color: '#333' }}>
+              Tem certeza que deseja excluir esta nota fiscal? Esta acao e definitiva e nao pode ser desfeita.
+            </p>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>Digite o PIN para confirmar:</label>
             <input
               type="password"
-              maxLength={4}
               value={pinExclusao}
               onChange={(e) => setPinExclusao(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-lg text-center tracking-widest"
-              placeholder="****"
-              autoFocus
+              maxLength={4}
+              style={{ width: '100%', padding: 8, marginBottom: 10, borderRadius: 8, border: '1px solid #ccc' }}
             />
-            {erroExclusao && (
-              <p className="text-red-600 mb-4">{erroExclusao}</p>
-            )}
-            <div className="flex gap-3">
+            {erroExclusao && <p style={{ color: '#C8102E', fontSize: 14 }}>{erroExclusao}</p>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button
                 onClick={confirmarExclusao}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', flex: 1 }}
               >
-                Confirmar exclusao
+                Excluir definitivamente
               </button>
               <button
-                onClick={() => {
-                  setExcluindoId(null);
-                  setPinExclusao('');
-                  setErroExclusao('');
-                }}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                onClick={cancelarExclusao}
+                style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', flex: 1 }}
               >
                 Cancelar
               </button>
