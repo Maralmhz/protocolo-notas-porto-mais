@@ -81,13 +81,20 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
     whiteSpace: 'nowrap',
   };
 
-  const tdStyleRight = {
-    ...tdStyle,
-    position: 'sticky',
-    right: 0,
-    backgroundColor: '#f0f4f8',
-    zIndex: 1,
-  };
+  function getRowBg(n, i) {
+    if (n.status === 'Assinado') return '#d4edda';
+    return i % 2 === 0 ? '#f9f9f9' : '#ffffff';
+  }
+
+  function getTdStyleRight(n, i) {
+    return {
+      ...tdStyle,
+      position: 'sticky',
+      right: 0,
+      backgroundColor: n.status === 'Assinado' ? '#c3e6cb' : (i % 2 === 0 ? '#f0f4f8' : '#f8f8f8'),
+      zIndex: 1,
+    };
+  }
 
   function formatarValor(v) {
     if (!v && v !== 0) return '-';
@@ -130,7 +137,7 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
           </thead>
           <tbody>
             {notasFiltradas.map((n, i) => (
-              <tr key={n.id || i} style={{ backgroundColor: i % 2 === 0 ? '#f9fbf9' : '#fff' }}>
+              <tr key={n.id || i} style={{ backgroundColor: getRowBg(n, i) }}>
                 <td style={tdStyle}>
                   <span style={{
                     padding: '3px 10px',
@@ -149,7 +156,7 @@ export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExclu
                 <td style={tdStyle}>{n.fornecedor || '-'}</td>
                 <td style={tdStyle}>{formatarValor(n.valor)}</td>
                 <td style={tdStyle}>{n.parcelas || '-'}</td>
-                <td style={tdStyleRight}>
+                <td style={getTdStyleRight(n, i)}>
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     {n.status !== 'Assinado' && (
                       <button
