@@ -49,13 +49,17 @@ export default function ProtocoloPage() {
   }
 
   function editar(nota) {
+    console.log('editando nota:', nota);
     setNotaEditando(nota);
     setModalAberto(true);
   }
 
   function novaNota() {
+    console.log('clicou nova nota');
+    console.log('modalAberto antes:', modalAberto);
     setNotaEditando(null);
     setModalAberto(true);
+    console.log('modalAberto depois:', modalAberto);
   }
 
   function exportarCSV() {
@@ -78,6 +82,8 @@ export default function ProtocoloPage() {
     (n.numero_nf || '').toLowerCase().includes(filtro.toLowerCase()) ||
     (n.fornecedor || '').toLowerCase().includes(filtro.toLowerCase())
   );
+
+  console.log('render - modalAberto:', modalAberto, 'notaEditando:', notaEditando);
 
   return (
     <AuthGate>
