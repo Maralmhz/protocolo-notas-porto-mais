@@ -1,45 +1,265 @@
-'use client';
+"use client";
 
-export default function TabelaNotas({ notas, onEditar, onDeletar, onAtualizar }) {
+import { useState } from "react";
+
+export default function TabelaNotas({ notas, loading, onEditar, onAssinar, onExcluir }) {
+  const [modalExclusao, setModalExclusao] = useState(null);
+
+  function formatarData(dataIso) {
+    if (!dataIso) return "";
+    try {
+      const data = new Date(dataIso);
+      return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
+    } catch {
+      return dataIso;
+    }
+  }
+
+  function formatarMoeda(valor) {
+    if (valor === null || valor === undefined || valor === "") return "R$ 0,00";
+    const num = typeof valor === "string" ? parseFloat(valor.replace(/[^0-9.]/g, "")) : valor;
+    if (isNaN(num)) return "R$ 0,00";
+    return num.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  }
+
+  if (loading) {
+    return (
+      <div style={{
+        padding: "40px",
+        textAlign: "center",
+        color: "#666",
+      }}>
+        Carregando...
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nota</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fornecedor</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evento</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Entrega</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimento</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Açııes</th>
+    <>
+      <div style={{
+        width: "100%",
+        overflowX: "auto",
+        border: "1px solid #e0e0e0",
+        borderRadius: "8px",
+        backgroundColor: "white",
+      }}>
+        <table style={{
+          width: "100%",
+          minWidth: "1260px",
+          borderCollapse: "collapse",
+          fontSize: "13px",
+        }}>
+          <thead>
+            <tr style={{
+              backgroundColor: "#f8f9fa",
+              borderBottom: "2px solid #dee2e6",
+            }}>
+              <th style={headerStyle}>Entrega</th>
+              <th style={headerStyle}>Vencimento</th>
+              <th style={headerStyle}>NF</th>
+              <th style={headerStyle}>Fornecedor</th>
+              <th style={{ ...headerStyle, maxWidth: "200px" }}>Observa��o</th>
+              <th style={headerStyle}>Valor</th>
+              <th style={headerStyle}>Parcelas</th>
+              <th style={headerStyle}>Status</th>
+              <th style={headerStyle}>A��es</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {notas.map((nota) => (
-              <tr key={nota.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{nota.numeroNota || nota.numero_nf}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{nota.fornecedor}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{nota.evento}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">R$ {Number(nota.valor || 0).toFixed(2)}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{nota.dataEntrega ? new Date(nota.dataEntrega).toLocaleDateString('pt-BR') : '-'}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{nota.vencimento ? new Date(nota.vencimento).toLocaleDateString('pt-BR') : '-'}</td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${nota.assinado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    {nota.assinado ? 'Assinado' : 'Pendente'}
-                  </span>
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap text-right text-sm">
-                  <button onClick={() => onEditar(nota)} className="text-blue-600 hover:text-blue-800 mr-3">Editar</button>
-                  <button onClick={() => onDeletar(nota.id)} className="text-red-600 hover:text-red-800">Excluir</button>
+          <tbody>
+            {notas.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{
+                  padding: "40px",
+                  textAlign: "center",
+                  color: "#666",
+                  backgroundColor: "#fafafa",
+                }}>
+                  Nenhuma nota encontrada
                 </td>
               </tr>
-            ))}
+            ) : (
+              notas.map((nota, index) => {
+                const assinado = nota.assinado === true || nota.assinado === "true" || nota.dataAssinatura;
+                const backgroundColor = assinado ? "#d4edda" : (index % 2 === 0 ? "#ffffff" : "#f8f9fa");
+                
+                return (
+                  <tr
+                    key={nota.id || index}
+                    style={{
+                      backgroundColor,
+                      borderBottom: "1px solid #e0e0e0",
+                    }}
+                  >
+                    <td style={cellStyle}>{formatarData(nota.dataEntrega)}</td>
+                    <td style={cellStyle}>{formatarData(nota.dataVencimento)}</td>
+                    <td style={cellStyle}>{nota.nf || "-"}</td>
+                    <td style={cellStyle}>{nota.fornecedor || "-"}</td>
+                    <td style={{
+                      ...cellStyle,
+                      maxWidth: "200px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {nota.observacao || "-"}
+                    </td>
+                    <td style={cellStyle}>{formatarMoeda(nota.valor)}</td>
+                    <td style={cellStyle}>{nota.parcelas || "-"}</td>
+                    <td style={cellStyle}>
+                      <span style={{
+                        padding: "4px 10px",
+                        borderRadius: "12px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        backgroundColor: assinado ? "#28a745" : "#fd7e14",
+                        color: "white",
+                        display: "inline-block",
+                      }}>
+                        {assinado ? "Assinado" : "Pendente"}
+                      </span>
+                    </td>
+                    <td style={cellStyle}>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        flexWrap: "nowrap",
+                      }}>
+                        <button
+                          onClick={() => onEditar(nota)}
+                          style={actionButtonStyle("gray")}
+                          title="Editar"
+                        >
+                          Editar
+                        </button>
+                        {!assinado && (
+                          <button
+                            onClick={() => onAssinar(nota.id)}
+                            style={actionButtonStyle("#0B3D91")}
+                            title="Assinar"
+                          >
+                            Assinar
+                        </button>
+                        )}
+                        <button
+                          onClick={() => setModalExclusao(nota)}
+                          style={actionButtonStyle("#C8102E")}
+                          title="Excluir"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
-    </div>
+
+      {modalExclusao && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: "white",
+            padding: "24px",
+            borderRadius: "8px",
+            minWidth: "320px",
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: "12px" }}>
+              Confirmar exclus�o
+            </h3>
+            <p style={{
+              color: "#666",
+              marginBottom: "20px",
+              fontSize: "14px",
+            }}>
+              Tem certeza que deseja excluir a nota NF{" "}
+              <strong>{modalExclusao.nf || "N�o informada"}</strong> do fornecedor{" "}
+              <strong>{modalExclusao.fornecedor || "N�o informado"}</strong>?
+            </p>
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setModalExclusao(null)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  onExcluir(modalExclusao.id);
+                  setModalExclusao(null);
+                }}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#C8102E",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                }}
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
+}
+
+const headerStyle = {
+  padding: "10px 12px",
+  textAlign: "left",
+  fontWeight: "600",
+  color: "#495057",
+  borderBottom: "2px solid #dee2e6",
+  whiteSpace: "nowrap",
+  fontSize: "13px",
+};
+
+const cellStyle = {
+  padding: "10px 12px",
+  borderBottom: "1px solid #e0e0e0",
+  verticalAlign: "middle",
+  fontSize: "13px",
+  color: "#333",
+};
+
+function actionButtonStyle(color) {
+  return {
+    padding: "6px 9px",
+    backgroundColor: color,
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "500",
+    whiteSpace: "nowrap",
+  };
 }
