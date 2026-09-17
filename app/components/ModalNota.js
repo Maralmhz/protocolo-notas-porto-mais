@@ -45,6 +45,7 @@ export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    console.log('salvando nota:', form);
     onSalvar(form);
   }
 
@@ -106,6 +107,7 @@ export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
                 onChange={handleChange}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 required
+                placeholder="0.00"
               />
             </div>
             <div>
