@@ -25,6 +25,16 @@ export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
         observacao: nota.observacao || '',
         parcelas: nota.parcelas || '',
       });
+    } else {
+      setForm({
+        numero_nf: '',
+        fornecedor: '',
+        valor: '',
+        data_entrega: '',
+        data_vencimento: '',
+        observacao: '',
+        parcelas: '',
+      });
     }
   }, [nota]);
 
@@ -39,95 +49,117 @@ export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">{nota ? 'Editar Nota' : 'Nova Nota Fiscal'}</h2>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+    }}>
+      <div style={{
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        padding: '24px',
+        maxWidth: '560px',
+        width: '100%',
+        margin: '16px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+      }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>
+          {nota ? 'Editar Nota' : 'Nova Nota Fiscal'}
+        </h2>
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
-              <label className="block text-sm font-medium mb-1">Numero NF</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Numero NF</label>
               <input
                 name="numero_nf"
                 value={form.numero_nf}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Fornecedor</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Fornecedor</label>
               <input
                 name="fornecedor"
                 value={form.fornecedor}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Valor</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Valor</label>
               <input
                 name="valor"
                 type="number"
                 step="0.01"
                 value={form.valor}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Data de Entrega</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Data de Entrega</label>
               <input
                 name="data_entrega"
                 type="date"
                 value={form.data_entrega}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Data de Vencimento</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Data de Vencimento</label>
               <input
                 name="data_vencimento"
                 type="date"
                 value={form.data_vencimento}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Parcelas</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Parcelas</label>
               <input
                 name="parcelas"
                 value={form.parcelas}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 placeholder="Ex: 1/3"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Observacao</label>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>Observacao</label>
               <textarea
                 name="observacao"
                 value={form.observacao}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '80px' }}
                 rows={3}
               />
             </div>
           </div>
-          <div className="flex gap-3 mt-6">
+          <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
             <button
               type="submit"
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              style={{ flex: 1, backgroundColor: '#0B3D91', color: '#fff', border: 'none', borderRadius: '4px', padding: '10px 16px', cursor: 'pointer', fontWeight: '500' }}
             >
               Salvar
             </button>
             <button
               type="button"
               onClick={onFechar}
-              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              style={{ flex: 1, backgroundColor: '#666', color: '#fff', border: 'none', borderRadius: '4px', padding: '10px 16px', cursor: 'pointer', fontWeight: '500' }}
             >
               Cancelar
             </button>
