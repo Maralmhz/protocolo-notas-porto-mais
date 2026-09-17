@@ -1,208 +1,129 @@
 'use client';
-import { useState } from 'react';
 
-function formatarData(data) {
-  if (!data) return '-';
-  const str = String(data).slice(0, 10);
-  const [ano, mes, dia] = str.split('-');
-  if (!ano || !mes || !dia) return '-';
-  return `${dia}/${mes}/${ano}`;
-}
+import React, { useState } from 'react';
 
-const meses = [
-  { valor: '01', nome: 'Janeiro' },
-  { valor: '02', nome: 'Fevereiro' },
-  { valor: '03', nome: 'Março' },
-  { valor: '04', nome: 'Abril' },
-  { valor: '05', nome: 'Maio' },
-  { valor: '06', nome: 'Junho' },
-  { valor: '07', nome: 'Julho' },
-  { valor: '08', nome: 'Agosto' },
-  { valor: '09', nome: 'Setembro' },
-  { valor: '10', nome: 'Outubro' },
-  { valor: '11', nome: 'Novembro' },
-  { valor: '12', nome: 'Dezembro' },
-];
+export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
+  const [excluindoId, setExcluindoId] = useState(null);
+  const [pinExclusao, setPinExclusao] = useState('');
+  const [erroExclusao, setErroExclusao] = useState('');
 
-export default function TabelaNotas({ notas, setor, onAssinar, onEditar, onExcluir, mesSelecionado, onMesChange }) {
-  const [pinModal, setPinModal] = useState(false);
-  const [pinInput, setPinInput] = useState('');
-  const [pinAcao, setPinAcao] = useState(null);
-  const [pinNota, setPinNota] = useState(null);
-  const [pinErro, setPinErro] = useState(false);
-
-  const notasFiltradas = mesSelecionado
-    ? notas.filter(n => {
-        const venc = String(n.data_vencimento || '').slice(5, 7);
-        return venc === mesSelecionado;
-      })
-    : notas;
-
-  function pedirPin(acao, nota) {
-    setPinAcao(acao);
-    setPinNota(nota);
-    setPinInput('');
-    setPinErro(false);
-    setPinModal(true);
-  }
-
-  function confirmarPin() {
-    if (pinInput === '1010') {
-      setPinModal(false);
-      if (pinAcao === 'editar') onEditar(pinNota);
-      if (pinAcao === 'excluir') onExcluir(pinNota);
-    } else {
-      setPinErro(true);
+  function confirmarExclusao() {
+    if (pinExclusao !== '1010') {
+      setErroExclusao('PIN incorreto!');
+      return;
     }
+    onExcluir(excluindoId);
+    setExcluindoId(null);
+    setPinExclusao('');
+    setErroExclusao('');
   }
 
-  const thStyle = {
-    padding: '10px 12px',
-    textAlign: 'left',
-    backgroundColor: '#1a3a6b',
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: '13px',
-    whiteSpace: 'nowrap',
-  };
-
-  const thStyleRight = {
-    ...thStyle,
-    position: 'sticky',
-    right: 0,
-    zIndex: 2,
-    backgroundColor: '#1a3a6b',
-  };
-
-  const tdStyle = {
-    padding: '8px 12px',
-    fontSize: '13px',
-    borderBottom: '1px solid #ddd',
-    whiteSpace: 'nowrap',
-  };
-
-  function getRowBg(n, i) {
-    if (n.status === 'Assinado') return '#d4edda';
-    return i % 2 === 0 ? '#f9f9f9' : '#ffffff';
+  function estaAssinada(n) {
+    return n.status === 'Assinado' || n.assinado_por != null || n.data_assinatura != null;
   }
 
-  function getTdStyleRight(n, i) {
-    return {
-      ...tdStyle,
-      position: 'sticky',
-      right: 0,
-      backgroundColor: n.status === 'Assinado' ? '#c3e6cb' : (i % 2 === 0 ? '#f0f4f8' : '#f8f8f8'),
-      zIndex: 1,
-    };
-  }
-
-  function formatarValor(v) {
-    if (!v && v !== 0) return '-';
-    const num = parseFloat(v);
-    if (isNaN(num)) return v;
-    return 'R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
   }
 
   return (
-    <div>
-      {/* Filtro por mes */}
-      <div style={{ marginBottom: '12px' }}>
-        <label style={{ marginRight: '8px', fontWeight: 'bold' }}>Filtrar por mes de vencimento:</label>
-        <select
-          value={mesSelecionado || ''}
-          onChange={e => onMesChange(e.target.value || null)}
-          style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid #ccc' }}
-        >
-          <option value=''>Todos os meses</option>
-          {meses.map(m => (
-            <option key={m.valor} value={m.valor}>{m.nome}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Tabela */}
-      <div style={{ overflowX: 'auto', width: '100%' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Entrega</th>
-              <th style={thStyle}>Vencimento</th>
-              <th style={thStyle}>NF</th>
-              <th style={thStyle}>Fornecedor</th>
-              <th style={thStyle}>Valor</th>
-              <th style={thStyle}>Parcelas</th>
-              <th style={thStyleRight}>Acoes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {notasFiltradas.map((n, i) => (
-              <tr key={n.id || i} style={{ backgroundColor: getRowBg(n, i) }}>
-                <td style={tdStyle}>
-                  <span style={{
-                    padding: '3px 10px',
-                    borderRadius: '12px',
-                    backgroundColor: n.status === 'Assinado' ? '#28a745' : '#6c757d',
-                    color: '#fff',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                  }}>
-                    {n.status || 'Entregue'}
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="py-2 px-4 border-b text-left">ID</th>
+            <th className="py-2 px-4 border-b text-left">Numero NF</th>
+            <th className="py-2 px-4 border-b text-left">Fornecedor</th>
+            <th className="py-2 px-4 border-b text-left">Valor</th>
+            <th className="py-2 px-4 border-b text-left">Data de Entrega</th>
+            <th className="py-2 px-4 border-b text-left">Vencimento</th>
+            <th className="py-2 px-4 border-b text-left">Status</th>
+            <th className="py-2 px-4 border-b text-left">Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {notas?.map((n) => {
+            const assinada = estaAssinada(n);
+            return (
+              <tr key={n.id} className="hover:bg-gray-50">
+                <td className="py-2 px-4 border-b">{n.id}</td>
+                <td className="py-2 px-4 border-b">{n.numero_nf}</td>
+                <td className="py-2 px-4 border-b">{n.fornecedor}</td>
+                <td className="py-2 px-4 border-b">{n.valor != null && n.valor !== '' ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
+                <td className="py-2 px-4 border-b">{formatDate(n.data_entrega)}</td>
+                <td className="py-2 px-4 border-b">{formatDate(n.data_vencimento)}</td>
+                <td className="py-2 px-4 border-b">
+                  <span className={`px-2 py-1 rounded ${assinada ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {assinada ? 'Assinado' : 'Pendente'}
                   </span>
                 </td>
-                <td style={tdStyle}>{formatarData(n.data_entrega)}</td>
-                <td style={tdStyle}>{formatarData(n.data_vencimento)}</td>
-                <td style={tdStyle}>{n.numero_nf || '-'}</td>
-                <td style={tdStyle}>{n.fornecedor || '-'}</td>
-                <td style={tdStyle}>{formatarValor(n.valor)}</td>
-                <td style={tdStyle}>{n.parcelas || '-'}</td>
-                <td style={getTdStyleRight(n, i)}>
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                    {n.status !== 'Assinado' && (
-                      <button
-                        onClick={() => onAssinar(n)}
-                        style={{ padding: '4px 10px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                      >
-                        Assinar
-                      </button>
-                    )}
-                    <button
-                      onClick={() => pedirPin('editar', n)}
-                      style={{ padding: '4px 10px', backgroundColor: '#1a3a6b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => pedirPin('excluir', n)}
-                      style={{ padding: '4px 10px', backgroundColor: '#555', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                    >
-                      Excluir
-                    </button>
-                  </div>
+                <td className="py-2 px-4 border-b">
+                  <button
+                    onClick={() => onEditar(n)}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded mr-2"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => onAssinar(n.id)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
+                    disabled={assinada}
+                  >
+                    Assinar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setExcluindoId(n.id);
+                      setPinExclusao('');
+                      setErroExclusao('');
+                    }}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Excluir
+                  </button>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            );
+          })}
+        </tbody>
+      </table>
 
-      {/* Modal PIN */}
-      {pinModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '8px', minWidth: '280px', textAlign: 'center' }}>
-            <h3 style={{ marginBottom: '16px' }}>Digite o PIN</h3>
+      {excluindoId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Confirmar Exclusao</h3>
+            <p className="mb-4">Digite o PIN para excluir esta nota:</p>
             <input
-              type='password'
-              value={pinInput}
-              onChange={e => setPinInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && confirmarPin()}
-              placeholder='PIN'
-              style={{ padding: '8px', fontSize: '16px', width: '100%', marginBottom: '12px', textAlign: 'center', border: '1px solid #ccc', borderRadius: '4px' }}
+              type="password"
+              maxLength={4}
+              value={pinExclusao}
+              onChange={(e) => setPinExclusao(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-lg text-center tracking-widest"
+              placeholder="****"
+              autoFocus
             />
-            {pinErro && <p style={{ color: 'red', marginBottom: '10px' }}>PIN incorreto</p>}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={confirmarPin} style={{ padding: '8px 20px', backgroundColor: '#1a3a6b', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Confirmar</button>
-              <button onClick={() => setPinModal(false)} style={{ padding: '8px 20px', backgroundColor: '#ccc', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancelar</button>
+            {erroExclusao && (
+              <p className="text-red-600 mb-4">{erroExclusao}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={confirmarExclusao}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+              >
+                Confirmar exclusao
+              </button>
+              <button
+                onClick={() => {
+                  setExcluindoId(null);
+                  setPinExclusao('');
+                  setErroExclusao('');
+                }}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
