@@ -1,73 +1,138 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 
 export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
   const [form, setForm] = useState({
-    data_entrega: '',
-    data_vencimento: '',
     numero_nf: '',
     fornecedor: '',
-    observacao: '',
     valor: '',
+    data_entrega: '',
+    data_vencimento: '',
+    observacao: '',
     parcelas: '',
-    status: 'Pendente',
   });
 
   useEffect(() => {
-    if (nota) setForm(nota);
+    if (nota) {
+      setForm({
+        id: nota.id,
+        numero_nf: nota.numero_nf || '',
+        fornecedor: nota.fornecedor || '',
+        valor: nota.valor || '',
+        data_entrega: nota.data_entrega || '',
+        data_vencimento: nota.data_vencimento || '',
+        observacao: nota.observacao || '',
+        parcelas: nota.parcelas || '',
+      });
+    }
   }, [nota]);
 
-  function campo(nome, valor) {
-    setForm((f) => ({ ...f, [nome]: valor }));
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSalvar(form);
   }
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-      <div style={{ background: '#fff', padding: 24, borderRadius: 12, width: 420, maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3 style={{ color: '#0B3D91' }}>{nota ? 'Editar nota' : 'Nova nota fiscal'}</h3>
-
-        <label>Data de entrega</label>
-        <input type="date" value={form.data_entrega || ''} onChange={(e) => campo('data_entrega', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        <label>Vencimento</label>
-        <input type="date" value={form.data_vencimento || ''} onChange={(e) => campo('data_vencimento', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        <label>Numero da NF</label>
-        <input value={form.numero_nf || ''} onChange={(e) => campo('numero_nf', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        <label>Fornecedor</label>
-        <input value={form.fornecedor || ''} onChange={(e) => campo('fornecedor', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        <label>Observacao</label>
-        <input value={form.observacao || ''} onChange={(e) => campo('observacao', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        <label>Valor</label>
-        <input type="number" value={form.valor || ''} onChange={(e) => campo('valor', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        <label>Parcelas</label>
-        <input value={form.parcelas || ''} onChange={(e) => campo('parcelas', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }} />
-
-        {nota && (
-          <>
-            <label>Status</label>
-            <select value={form.status || 'Pendente'} onChange={(e) => campo('status', e.target.value)} style={{ width: '100%', marginBottom: 10, padding: 8 }}>
-              <option>Pendente</option>
-              <option>Entregue</option>
-              <option>Conferido</option>
-              <option>Assinado</option>
-              <option>Com pendencia</option>
-            </select>
-          </>
-        )}
-
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          <button onClick={() => onSalvar(form)} style={{ background: '#C8102E', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', flex: 1 }}>
-            Salvar
-          </button>
-          <button onClick={onFechar} style={{ background: '#eee', border: 'none', borderRadius: 8, padding: '10px 16px', cursor: 'pointer', flex: 1 }}>
-            Cancelar
-          </button>
-        </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4">{nota ? 'Editar Nota' : 'Nova Nota Fiscal'}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Numero NF</label>
+              <input
+                name="numero_nf"
+                value={form.numero_nf}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Fornecedor</label>
+              <input
+                name="fornecedor"
+                value={form.fornecedor}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Valor</label>
+              <input
+                name="valor"
+                type="number"
+                step="0.01"
+                value={form.valor}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Data de Entrega</label>
+              <input
+                name="data_entrega"
+                type="date"
+                value={form.data_entrega}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Data de Vencimento</label>
+              <input
+                name="data_vencimento"
+                type="date"
+                value={form.data_vencimento}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Parcelas</label>
+              <input
+                name="parcelas"
+                value={form.parcelas}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                placeholder="Ex: 1/3"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Observacao</label>
+              <textarea
+                name="observacao"
+                value={form.observacao}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+                rows={3}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              Salvar
+            </button>
+            <button
+              type="button"
+              onClick={onFechar}
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
