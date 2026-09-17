@@ -19,7 +19,7 @@ export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
         id: nota.id,
         numero_nf: nota.numero_nf || '',
         fornecedor: nota.fornecedor || '',
-        valor: nota.valor || '',
+        valor: nota.valor != null ? String(nota.valor) : '',
         data_entrega: nota.data_entrega || '',
         data_vencimento: nota.data_vencimento || '',
         observacao: nota.observacao || '',
@@ -45,8 +45,13 @@ export default function ModalNota({ nota, setor, onSalvar, onFechar }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    console.log('salvando nota:', form);
-    onSalvar(form);
+    const valorNumerico = form.valor ? parseFloat(form.valor.replace(/[^0-9.-]/g, '')) : 0;
+    const formData = {
+      ...form,
+      valor: valorNumerico,
+    };
+    console.log('salvando nota:', formData);
+    onSalvar(formData);
   }
 
   return (
