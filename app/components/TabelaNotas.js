@@ -29,47 +29,45 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', backgroundColor: '#fff', border: '1px solid #ddd' }}>
         <thead>
-          <tr className="bg-gray-100">
-            <th className="py-2 px-4 border-b text-left">ID</th>
-            <th className="py-2 px-4 border-b text-left">Numero NF</th>
-            <th className="py-2 px-4 border-b text-left">Fornecedor</th>
-            <th className="py-2 px-4 border-b text-left">Valor</th>
-            <th className="py-2 px-4 border-b text-left">Data de Entrega</th>
-            <th className="py-2 px-4 border-b text-left">Vencimento</th>
-            <th className="py-2 px-4 border-b text-left">Status</th>
-            <th className="py-2 px-4 border-b text-left">Acoes</th>
+          <tr style={{ backgroundColor: '#f5f5f5' }}>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Numero NF</th>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Fornecedor</th>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Valor</th>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Entrega</th>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Vencimento</th>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Status</th>
+            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600' }}>Acoes</th>
           </tr>
         </thead>
         <tbody>
-          {notas?.map((n) => {
+          {notas?.map((n, index) => {
             const assinada = estaAssinada(n);
             return (
-              <tr key={n.id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b">{n.id}</td>
-                <td className="py-2 px-4 border-b">{n.numero_nf}</td>
-                <td className="py-2 px-4 border-b">{n.fornecedor}</td>
-                <td className="py-2 px-4 border-b">{n.valor != null && n.valor !== '' ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
-                <td className="py-2 px-4 border-b">{formatDate(n.data_entrega)}</td>
-                <td className="py-2 px-4 border-b">{formatDate(n.data_vencimento)}</td>
-                <td className="py-2 px-4 border-b">
-                  <span className={`px-2 py-1 rounded ${assinada ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+              <tr key={n.id} style={{ backgroundColor: assinada ? '#e8f5e9' : (index % 2 === 0 ? '#fff' : '#f9f9f9') }}>
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>{n.numero_nf}</td>
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>{n.fornecedor}</td>
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>{n.valor != null && n.valor !== '' ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>{formatDate(n.data_entrega)}</td>
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>{formatDate(n.data_vencimento)}</td>
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>
+                  <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500', backgroundColor: assinada ? '#4caf50' : '#ff9800', color: '#fff' }}>
                     {assinada ? 'Assinado' : 'Pendente'}
                   </span>
                 </td>
-                <td className="py-2 px-4 border-b">
+                <td style={{ padding: '12px 8px', borderBottom: '1px solid #eee', fontSize: '14px' }}>
                   <button
                     onClick={() => onEditar(n)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded mr-2"
+                    style={{ backgroundColor: '#757575', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', marginRight: '4px', cursor: 'pointer', fontSize: '12px' }}
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => onAssinar(n.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
                     disabled={assinada}
+                    style={{ backgroundColor: assinada ? '#ccc' : '#2196f3', color: assinada ? '#999' : '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', marginRight: '4px', cursor: assinada ? 'not-allowed' : 'pointer', fontSize: '12px' }}
                   >
                     Assinar
                   </button>
@@ -79,7 +77,7 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
                       setPinExclusao('');
                       setErroExclusao('');
                     }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    style={{ backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px' }}
                   >
                     Excluir
                   </button>
@@ -91,26 +89,26 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
       </table>
 
       {excluindoId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Confirmar Exclusao</h3>
-            <p className="mb-4">Digite o PIN para excluir esta nota:</p>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '24px', maxWidth: '400px', width: '100%', margin: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Confirmar Exclusao</h3>
+            <p style={{ marginBottom: '16px', fontSize: '14px' }}>Digite o PIN para excluir esta nota:</p>
             <input
               type="password"
               maxLength={4}
               value={pinExclusao}
               onChange={(e) => setPinExclusao(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-lg text-center tracking-widest"
+              style={{ width: '100%', border: '1px solid #ccc', borderRadius: '4px', padding: '12px', fontSize: '18px', textAlign: 'center', letterSpacing: '8px', marginBottom: '16px', boxSizing: 'border-box' }}
               placeholder="****"
               autoFocus
             />
             {erroExclusao && (
-              <p className="text-red-600 mb-4">{erroExclusao}</p>
+              <p style={{ color: '#f44336', marginBottom: '16px', fontSize: '14px' }}>{erroExclusao}</p>
             )}
-            <div className="flex gap-3">
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={confirmarExclusao}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                style={{ flex: 1, backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', padding: '12px', cursor: 'pointer', fontWeight: '500' }}
               >
                 Confirmar exclusao
               </button>
@@ -120,7 +118,7 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
                   setPinExclusao('');
                   setErroExclusao('');
                 }}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                style={{ flex: 1, backgroundColor: '#757575', color: '#fff', border: 'none', borderRadius: '4px', padding: '12px', cursor: 'pointer', fontWeight: '500' }}
               >
                 Cancelar
               </button>
