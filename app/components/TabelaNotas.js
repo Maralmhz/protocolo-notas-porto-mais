@@ -36,17 +36,19 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
   }
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', backgroundColor: '#fff', border: '1px solid #ddd', borderCollapse: 'collapse' }}>
+    <div style={{ overflowX: 'auto', width: '100%' }}>
+      <table style={{ width: '100%', backgroundColor: '#fff', border: '1px solid #ddd', borderCollapse: 'collapse', minWidth: '1200px' }}>
         <thead>
           <tr style={{ backgroundColor: '#f5f5f5' }}>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Numero NF</th>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Fornecedor</th>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Valor</th>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Entrega</th>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Vencimento</th>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Status</th>
-            <th style={{ padding: '12px 8px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: '#333' }}>Acoes</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Entrega</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Vencimento</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>NF</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Fornecedor</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Observacao</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Valor</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Parcelas</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Status</th>
+            <th style={{ padding: '14px 12px', borderBottom: '2px solid #ddd', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#333' }}>Acoes</th>
           </tr>
         </thead>
         <tbody>
@@ -54,27 +56,29 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
             const assinada = estaAssinada(n);
             return (
               <tr key={n.id} style={{ backgroundColor: assinada ? '#e8f5e9' : (index % 2 === 0 ? '#fff' : '#fafafa') }}>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px', color: '#333' }}>{n.numero_nf}</td>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px', color: '#333' }}>{n.fornecedor}</td>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px', color: '#333' }}>{n.valor != null && n.valor !== '' ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px', color: '#666' }}>{formatDate(n.data_entrega)}</td>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px', color: '#666' }}>{formatDate(n.data_vencimento)}</td>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px' }}>
-                  <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: assinada ? '#4caf50' : '#ff9800', color: '#fff' }}>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}>{formatDate(n.data_entrega)}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}>{formatDate(n.data_vencimento)}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}>{n.numero_nf}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}>{n.fornecedor}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#666', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.observacao || '-'}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333', fontWeight: '500' }}>{n.valor != null && n.valor !== '' ? `R$ ${parseFloat(n.valor).toFixed(2)}` : 'R$ 0.00'}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px', color: '#666' }}>{n.parcelas || '-'}</td>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px' }}>
+                  <span style={{ padding: '6px 14px', borderRadius: '14px', fontSize: '12px', fontWeight: '600', backgroundColor: assinada ? '#4caf50' : '#ff9800', color: '#fff' }}>
                     {assinada ? 'Assinado' : 'Pendente'}
                   </span>
                 </td>
-                <td style={{ padding: '10px 8px', borderBottom: '1px solid #eee', fontSize: '13px' }}>
+                <td style={{ padding: '14px 12px', borderBottom: '1px solid #eee', fontSize: '14px' }}>
                   <button
                     onClick={() => onEditar(n)}
-                    style={{ backgroundColor: '#757575', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 10px', marginRight: '4px', cursor: 'pointer', fontSize: '12px' }}
+                    style={{ backgroundColor: '#757575', color: '#fff', border: 'none', borderRadius: '4px', padding: '8px 14px', marginRight: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => onAssinar(n.id)}
                     disabled={assinada}
-                    style={{ backgroundColor: assinada ? '#ccc' : '#2196f3', color: assinada ? '#999' : '#fff', border: 'none', borderRadius: '4px', padding: '6px 10px', marginRight: '4px', cursor: assinada ? 'not-allowed' : 'pointer', fontSize: '12px' }}
+                    style={{ backgroundColor: assinada ? '#ccc' : '#2196f3', color: assinada ? '#999' : '#fff', border: 'none', borderRadius: '4px', padding: '8px 14px', marginRight: '6px', cursor: assinada ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: '500' }}
                   >
                     Assinar
                   </button>
@@ -84,7 +88,7 @@ export default function TabelaNotas({ notas, onAssinar, onEditar, onExcluir }) {
                       setPinExclusao('');
                       setErroExclusao('');
                     }}
-                    style={{ backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 10px', cursor: 'pointer', fontSize: '12px' }}
+                    style={{ backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', padding: '8px 14px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}
                   >
                     Excluir
                   </button>
