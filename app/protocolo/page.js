@@ -106,6 +106,7 @@ export default function ProtocoloPage() {
     <AuthGate>
       <div style={{
         display: "flex",
+        flexDirection: "column",
         minHeight: "100vh",
         backgroundColor: "#f5f5f5",
       }}>
@@ -114,8 +115,10 @@ export default function ProtocoloPage() {
         <main style={{
           flex: 1,
           width: "100%",
+          maxWidth: "1400px",
+          margin: "0 auto",
           boxSizing: "border-box",
-          padding: "20px 16px 32px",
+          padding: "24px 20px 40px",
         }}>
           <div style={{
             display: "flex",
