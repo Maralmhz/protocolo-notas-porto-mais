@@ -14,7 +14,9 @@ export default function ProtocoloPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [notaEditando, setNotaEditando] = useState(null);
   const [busca, setBusca] = useState("");
-  const [pinParaAssinatura, setPinParaAssinatura] = useState(null);
+  const [notaParaAssinar, setNotaParaAssinar] = useState(null);
+  const [pinAssinatura, setPinAssinatura] = useState("");
+  const [erroPin, setErroPin] = useState("");
 
   useEffect(() => {
     carregarNotas();
@@ -40,6 +42,45 @@ export default function ProtocoloPage() {
   function abrirEdicao(nota) {
     setNotaEditando(nota);
     setModalAberto(true);
+  }
+
+  function iniciarAssinatura(nota) {
+    setNotaParaAssinar(nota);
+    setPinAssinatura("");
+    setErroPin("");
+  }
+
+  async function confirmarAssinatura() {
+    if (pinAssinatura !== "1010") {
+      setErroPin("PIN incorreto!");
+      return;
+    }
+
+    try {
+      const id = notaParaAssinar.id;
+      const res = await fetch(`/api/notas/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...notaParaAssinar,
+          status: "Assinado",
+          assinado: true,
+          data_assinatura: new Date().toISOString(),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Erro ao assinar nota");
+      }
+
+      setNotaParaAssinar(null);
+      setPinAssinatura("");
+      setErroPin("");
+      await carregarNotas();
+    } catch (err) {
+      console.error("Erro ao assinar nota:", err);
+      setErroPin("Falha ao salvar assinatura. Tente novamente.");
+    }
   }
 
   async function salvarNota(nota) {
@@ -200,6 +241,7 @@ export default function ProtocoloPage() {
             loading={loading}
             onEditar={abrirEdicao}
             onExcluir={excluirNota}
+            onAssinar={iniciarAssinatura}
           />
 
           <ModalNota
@@ -211,6 +253,102 @@ export default function ProtocoloPage() {
             }}
             onSave={salvarNota}
           />
+
+          {notaParaAssinar && (
+            <div style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+            }}>
+              <div style={{
+                backgroundColor: "white",
+                padding: "24px",
+                borderRadius: "8px",
+                maxWidth: "380px",
+                width: "90%",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}>
+                <h3 style={{ margin: "0 0 12px 0", fontSize: "18px", color: "#0B3D91" }}>
+                  Confirmar Assinatura
+                </h3>
+                <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "#555" }}>
+                  Nota Fiscal: <strong>{notaParaAssinar.numero_nf || notaParaAssinar.nf || "-"}</strong><br/>
+                  Fornecedor: <strong>{notaParaAssinar.fornecedor || "-"}</strong>
+                </p>
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "500", color: "#333" }}>
+                    Digite o PIN de autorização:
+                  </label>
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={pinAssinatura}
+                    onChange={(e) => setPinAssinatura(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && confirmarAssinatura()}
+                    placeholder="PIN"
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      fontSize: "16px",
+                      textAlign: "center",
+                      border: erroPin ? "1px solid #e03131" : "1px solid #ddd",
+                      borderRadius: "6px",
+                      boxSizing: "border-box",
+                      letterSpacing: "4px",
+                    }}
+                  />
+                  {erroPin && (
+                    <span style={{ color: "#e03131", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                      {erroPin}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => {
+                      setNotaParaAssinar(null);
+                      setPinAssinatura("");
+                      setErroPin("");
+                    }}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#6c757d",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmarAssinatura}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#0B3D91",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                    }}
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </AuthGate>
