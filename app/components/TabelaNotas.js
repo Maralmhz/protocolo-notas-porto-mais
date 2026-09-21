@@ -6,7 +6,7 @@ function formatarDataBR(data) {
   if (!data) return "-";
   const texto = String(data).trim();
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) return texto;
-  const matchIso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const matchIso = texto.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
   if (matchIso) {
     const [, ano, mes, dia] = matchIso;
     return `${dia}/${mes}/${ano}`;
@@ -32,11 +32,23 @@ function extrairVencimento(nota) {
   return nota.data_vencimento ?? nota.dataVencimento ?? nota.due_date ?? nota.vencimento ?? null;
 }
 
+function isAssinado(nota) {
+  return (
+    nota.status === "Assinado" ||
+    nota.assinado === true ||
+    nota.assinado === "true" ||
+    nota.assinado_por != null ||
+    nota.data_assinatura != null ||
+    nota.dataAssinatura != null
+  );
+}
+
 export default function TabelaNotas({
   notas,
   loading,
   onEditar,
   onExcluir,
+  onAssinar,
 }) {
   const [ordenacao, setOrdenacao] = useState({ campo: "data_entrega", direcao: "desc" });
 
@@ -104,6 +116,9 @@ export default function TabelaNotas({
         }}>
           <thead>
             <tr style={{ backgroundColor: "#f8f9fa", borderBottom: "2px solid #dee2e6" }}>
+              <th onClick={() => ordenar("status")} style={{ ...thStyle, textAlign: "center" }}>
+                Status
+              </th>
               <th onClick={() => ordenar("data_entrega")} style={thStyle}>
                 Entrega {ordenacao.campo === "data_entrega" && (ordenacao.direcao === "asc" ? "▲" : "▼")}
               </th>
@@ -125,68 +140,104 @@ export default function TabelaNotas({
             </tr>
           </thead>
           <tbody>
-            {notasOrdenadas.map((nota, index) => (
-              <tr
-                key={nota.id || index}
-                style={{
-                  borderBottom: "1px solid #eee",
-                  backgroundColor: index % 2 === 0 ? "white" : "#fafafa",
-                }}
-              >
-                <td style={tdStyle}>{formatarDataBR(extrairEntrega(nota))}</td>
-                <td style={tdStyle}>{formatarDataBR(extrairVencimento(nota))}</td>
-                <td style={{ ...tdStyle, fontWeight: "500" }}>{nota.numero_nf || nota.nf || "-"}</td>
-                <td style={tdStyle}>{nota.fornecedor || "-"}</td>
-                <td style={{
-                  ...tdStyle,
-                  maxWidth: "200px",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }} title={nota.observacao}>
-                  {nota.observacao || "-"}
-                </td>
-                <td style={{ ...tdStyle, textAlign: "right", fontWeight: "500" }}>
-                  {formatarMoeda(nota.valor)}
-                </td>
-                <td style={{ ...tdStyle, textAlign: "center" }}>
-                  {nota.parcelas || "-"}
-                </td>
-                <td style={{ ...tdStyle, textAlign: "center" }}>
-                  <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
-                    <button
-                      onClick={() => onEditar(nota)}
-                      title="Editar"
-                      style={{
-                        padding: "4px 8px",
-                        backgroundColor: "#f8f9fa",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                      }}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => onExcluir(nota.id)}
-                      title="Excluir"
-                      style={{
-                        padding: "4px 8px",
-                        backgroundColor: "#fff5f5",
-                        border: "1px solid #ffc9c9",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        color: "#e03131",
-                      }}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {notasOrdenadas.map((nota, index) => {
+              const assinada = isAssinado(nota);
+              const rowBg = assinada ? "#eef9f0" : (index % 2 === 0 ? "white" : "#fafafa");
+
+              return (
+                <tr
+                  key={nota.id || index}
+                  style={{
+                    borderBottom: "1px solid #eee",
+                    backgroundColor: rowBg,
+                  }}
+                >
+                  <td style={{ ...tdStyle, textAlign: "center" }}>
+                    <span style={{
+                      padding: "3px 8px",
+                      borderRadius: "12px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      backgroundColor: assinada ? "#28a745" : "#fd7e14",
+                      color: "white",
+                      display: "inline-block",
+                    }}>
+                      {assinada ? "Assinado" : "Pendente"}
+                    </span>
+                  </td>
+                  <td style={tdStyle}>{formatarDataBR(extrairEntrega(nota))}</td>
+                  <td style={tdStyle}>{formatarDataBR(extrairVencimento(nota))}</td>
+                  <td style={{ ...tdStyle, fontWeight: "500" }}>{nota.numero_nf || nota.nf || "-"}</td>
+                  <td style={tdStyle}>{nota.fornecedor || "-"}</td>
+                  <td style={{
+                    ...tdStyle,
+                    maxWidth: "200px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }} title={nota.observacao}>
+                    {nota.observacao || "-"}
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: "right", fontWeight: "500" }}>
+                    {formatarMoeda(nota.valor)}
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: "center" }}>
+                    {nota.parcelas || "-"}
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: "center" }}>
+                    <div style={{ display: "flex", gap: "6px", justifyContent: "center", alignItems: "center" }}>
+                      {!assinada && onAssinar && (
+                        <button
+                          onClick={() => onAssinar(nota)}
+                          title="Assinar nota"
+                          style={{
+                            padding: "4px 8px",
+                            backgroundColor: "#0B3D91",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                          }}
+                        >
+                          Assinar
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onEditar(nota)}
+                        title="Editar"
+                        style={{
+                          padding: "4px 8px",
+                          backgroundColor: "#f8f9fa",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => onExcluir(nota.id)}
+                        title="Excluir"
+                        style={{
+                          padding: "4px 8px",
+                          backgroundColor: "#fff5f5",
+                          border: "1px solid #ffc9c9",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          color: "#e03131",
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
