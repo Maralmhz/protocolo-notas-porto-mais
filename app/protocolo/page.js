@@ -1,114 +1,215 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import ModalNota from '../components/ModalNota';
-import ModalLancamento from '../components/ModalLancamento';
-import TabelaNotas from '../components/TabelaNotas';
-import TabelaFinanceiro from '../components/TabelaFinanceiro';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import AuthGate from "../components/AuthGate";
+import MenuPrincipal from "../components/MenuPrincipal";
+import ModalNota from "../components/ModalNota";
+import TabelaNotas from "../components/TabelaNotas";
 
 export default function ProtocoloPage() {
-  const [modalNotaAberto, setModalNotaAberto] = useState(false);
-  const [modalLancamentoAberto, setModalLancamentoAberto] = useState(false);
-  const [notaSelecionada, setNotaSelecionada] = useState(null);
-  const [dadosTabela, setDadosTabela] = useState([]);
-  const [dadosFinanceiro, setDadosFinanceiro] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
-  const [abaAtiva, setAbaAtiva] = useState('notas');
+  const router = useRouter();
+  const [notas, setNotas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [notaEditando, setNotaEditando] = useState(null);
+  const [busca, setBusca] = useState("");
+  const [pinParaAssinatura, setPinParaAssinatura] = useState(null);
 
-  useEffect(() => { carregarDados(); }, []);
+  useEffect(() => {
+    carregarNotas();
+  }, []);
 
-  async function carregarDados() {
+  async function carregarNotas() {
     try {
-      setCarregando(true);
-      setErro(null);
-      const { data: notas, error: erroNotas } = await supabase.from('notas').select('*').order('data_emissao', { ascending: false });
-      if (erroNotas) throw erroNotas;
-      setDadosTabela(notas || []);
-      const { data: financeiro, error: erroFinanceiro } = await supabase.from('financeiro').select('*').order('data_lancamento', { ascending: false });
-      if (erroFinanceiro) throw erroFinanceiro;
-      setDadosFinanceiro(financeiro || []);
+      const res = await fetch("/api/notas");
+      const data = await res.json();
+      setNotas(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Erro:', err);
-      setErro('Erro ao carregar.');
+      console.error("Erro ao carregar notas:", err);
     } finally {
-      setCarregando(false);
+      setLoading(false);
     }
   }
 
-  function abrirModalNota(nota = null) { setNotaSelecionada(nota); setModalNotaAberto(true); }
-  function fecharModalNota() { setModalNotaAberto(false); setNotaSelecionada(null); carregarDados(); }
-  function abrirModalLancamento() { setModalLancamentoAberto(true); }
-  function fecharModalLancamento() { setModalLancamentoAberto(false); carregarDados(); }
+  function abrirNovaNota() {
+    setNotaEditando(null);
+    setModalAberto(true);
+  }
 
-  async function salvarNota(novaNota) {
+  function abrirEdicao(nota) {
+    setNotaEditando(nota);
+    setModalAberto(true);
+  }
+
+  async function salvarNota(nota) {
     try {
-      const { error } = await supabase.from('notas').upsert(novaNota);
-      if (error) throw error;
-      alert('Nota salva!');
-      fecharModalNota();
+      const url = nota.id ? `/api/notas/${nota.id}` : "/api/notas";
+      const method = nota.id ? "PUT" : "POST";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nota),
+      });
+
+      if (!res.ok) {
+        throw new Error("Falha ao salvar nota");
+      }
+      
+      await carregarNotas();
+      setModalAberto(false);
+      setNotaEditando(null);
     } catch (err) {
-      alert('Erro: ' + err.message);
+      console.error("Erro ao salvar nota:", err);
+      alert("Erro ao salvar nota. Tente novamente.");
     }
   }
 
-  async function salvarLancamento(novoLancamento) {
+  async function excluirNota(id) {
+    if (!confirm("Tem certeza que deseja excluir esta nota?")) return;
+    
     try {
-      const { error } = await supabase.from('financeiro').insert(novoLancamento);
-      if (error) throw error;
-      alert('Lancamento salvo!');
-      fecharModalLancamento();
+      await fetch(`/api/notas/${id}`, { method: "DELETE" });
+      await carregarNotas();
     } catch (err) {
-      alert('Erro: ' + err.message);
+      console.error("Erro ao excluir nota:", err);
+      alert("Erro ao excluir nota.");
     }
   }
+
+  async function exportarCSV() {
+    try {
+      const res = await fetch("/api/notas/csv");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `notas-${new Date().toISOString().split("T")[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Erro ao exportar CSV:", err);
+    }
+  }
+
+  const notasFiltradas = notas.filter((nota) => {
+    const termo = busca.toLowerCase();
+    return (
+      nota.fornecedor?.toLowerCase().includes(termo) ||
+      nota.numero_nf?.toLowerCase().includes(termo) ||
+      nota.observacao?.toLowerCase().includes(termo)
+    );
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-blue-600 text-white shadow-lg sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <h1 className="text-2xl font-bold">Protocolo - Porto Mais</h1>
-            <nav className="flex gap-2 flex-wrap">
-              <button onClick={() => setAbaAtiva('notas')} className={`px-4 py-2 rounded ${abaAtiva === 'notas' ? 'bg-white text-blue-600' : 'bg-blue-700'}`}>Notas</button>
-              <button onClick={() => setAbaAtiva('financeiro')} className={`px-4 py-2 rounded ${abaAtiva === 'financeiro' ? 'bg-white text-blue-600' : 'bg-blue-700'}`}>Financeiro</button>
-              <button onClick={() => window.location.href = '/'} className="px-4 py-2 bg-blue-700 rounded">Voltar</button>
-            </nav>
+    <AuthGate>
+      <div style={{
+        display: "flex",
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
+      }}>
+        <MenuPrincipal />
+        
+        <main style={{
+          flex: 1,
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "20px 16px 32px",
+        }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}>
+            <h1 style={{ 
+              fontSize: "24px", 
+              fontWeight: "600",
+              color: "#333",
+              margin: 0,
+            }}>
+              Protocolo de Notas
+            </h1>
+            
+            <div style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+            }}>
+              <button
+                onClick={abrirNovaNota}
+                style={{
+                  padding: "10px 16px",
+                  backgroundColor: "#0B3D91",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+              >
+                + Nova nota
+              </button>
+              
+              <button
+                onClick={exportarCSV}
+                style={{
+                  padding: "10px 16px",
+                  backgroundColor: "#6c757d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+              >
+                Exportar CSV
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {erro && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{erro}</div>}
-        {carregando ? <div className="text-center py-8">Carregando...</div> : (
-          <>
-            {abaAtiva === 'notas' && (
-              <div>
-                <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-                  <h2 className="text-xl font-semibold">Notas</h2>
-                  <button onClick={() => abrirModalNota()} className="bg-green-600 text-white px-4 py-2 rounded">+ Nova</button>
-                </div>
-                <TabelaNotas dados={dadosTabela} onEditar={abrirModalNota} />
-              </div>
-            )}
-            {abaAtiva === 'financeiro' && (
-              <div>
-                <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-                  <h2 className="text-xl font-semibold">Lancamentos</h2>
-                  <button onClick={abrirModalLancamento} className="bg-green-600 text-white px-4 py-2 rounded">+ Novo</button>
-                </div>
-                <TabelaFinanceiro dados={dadosFinanceiro} />
-              </div>
-            )}
-          </>
-        )}
-      </main>
-      {modalNotaAberto && <ModalNota isOpen={modalNotaAberto} onClose={fecharModalNota} nota={notaSelecionada} onSave={salvarNota} />}
-      {modalLancamentoAberto && <ModalLancamento isOpen={modalLancamentoAberto} onClose={fecharModalLancamento} onSave={salvarLancamento} />}
-    </div>
+
+          <div style={{
+            marginBottom: "20px",
+          }}>
+            <input
+              type="text"
+              placeholder="Buscar por fornecedor, NF ou observação..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                fontSize: "14px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <TabelaNotas
+            notas={notasFiltradas}
+            loading={loading}
+            onEditar={abrirEdicao}
+            onExcluir={excluirNota}
+          />
+
+          <ModalNota
+            aberto={modalAberto}
+            nota={notaEditando}
+            onClose={() => {
+              setModalAberto(false);
+              setNotaEditando(null);
+            }}
+            onSave={salvarNota}
+          />
+        </main>
+      </div>
+    </AuthGate>
   );
 }
